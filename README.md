@@ -37,6 +37,9 @@ promptspec-catalog-public/
     pattern.schema.json           # JSON Schema for patterns.json
 
   docs/
+    index.html                    # GitHub Pages catalog browser
+    styles.css                    # Website styles
+    app.js                        # Website catalog loader and filters
     terminology.md                # Vocabulary and term definitions
     methodology_summary.md        # Research methodology overview
     confidentiality.md            # Data provenance and privacy statement
@@ -61,6 +64,19 @@ The catalog contains **29 patterns** organized into 5 categories:
 | META_DIRECTIVES | 10 | RefusalBreaker, FlippedInteraction, GamePlay, InfiniteGeneration, QuestionRefinement, RAR, AlternativeApproaches, RE2, InstructionSelection, CognitiveVerifier |
 
 All patterns are derived from published prompt-engineering literature. For the full per-pattern table (definitions, examples, and notes), see [`PATTERN_CATALOG.md`](PATTERN_CATALOG.md), which is generated from `catalog/patterns.json`. If you edit the JSON, regenerate the Markdown so the two stay in sync.
+
+## Website
+
+The `docs/` directory contains a lightweight static catalog browser for GitHub Pages. It loads `catalog/patterns.json` as the source of truth, then renders searchable and filterable pattern cards.
+
+To enable it on GitHub:
+
+1. Open the repository settings.
+2. Go to **Pages**.
+3. Set the source to the `main` branch and the `/docs` folder.
+4. Save the Pages settings.
+
+No build step is required.
 
 ## Data Provenance
 
