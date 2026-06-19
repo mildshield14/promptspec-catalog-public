@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pattern.schema.json",
+  "title": "PatternCatalog",
+  "description": "Schema for the PromptSpec PatternDefinition catalog.",
+  "type": "object",
+  "required": ["patterns"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "catalog": { "type": "string" },
+    "version": { "type": "string" },
+    "count": { "type": "integer", "minimum": 0 },
+    "patterns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "description"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "category": { "type": "string", "enum": ["IN_CONTEXT_LEARNING", "REASONING", "OUTPUT_CONTROL", "CONTEXT_CONTROL", "META_DIRECTIVES"] },
+          "subcategory": { "type": "string" },
+          "componentTypes": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["PROFILE_ROLE", "DIRECTIVE", "CONTEXT", "WORKFLOW", "EXAMPLES", "OUTPUT_FORMAT", "CONSTRAINTS"] }
+          },
+          "detectionInstruction": { "type": ["string", "null"] },
+          "placeholderExample": { "type": ["string", "null"] },
+          "example": { "type": ["string", "null"] },
+          "notes": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}
