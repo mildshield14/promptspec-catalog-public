@@ -1,0 +1,18 @@
+pattern Persona
+category CONTEXT_CONTROL
+
+variables {
+    persona* : string
+    question* : string
+    input_data? : string
+}
+
+template ```
+Act as {{persona}}
+Provide outputs that {{persona}} would create
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```

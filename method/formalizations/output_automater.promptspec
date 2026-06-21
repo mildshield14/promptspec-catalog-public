@@ -1,0 +1,13 @@
+pattern OutputAutomater
+category OUTPUT_CONTROL
+
+variables {
+    language* : string
+    task* : string
+}
+
+template ```
+Whenever your output contains at least one manual step, generate an executable {{language}} script that automates those steps.
+
+Task: {{task}}
+```

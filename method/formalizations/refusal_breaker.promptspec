@@ -1,0 +1,20 @@
+pattern RefusalBreaker
+category META_DIRECTIVES
+
+variables {
+    question* : string
+    alt_query? : string
+}
+
+trigger ON_REFUSAL
+
+template ```
+If refusal occurs:
+Step 1: State refusal reason.
+Step 2: Reframe request into an alternative query.
+{{#alt_query}}
+Alternative query: {{alt_query}}
+{{/alt_query}}
+
+{{question}}
+```

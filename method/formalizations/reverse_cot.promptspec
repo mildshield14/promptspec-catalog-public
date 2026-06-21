@@ -1,0 +1,17 @@
+pattern ReverseCoT
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+}
+
+template ```
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+
+First, output the final answer only.
+Then, generate the reasoning steps that justify the answer.
+```

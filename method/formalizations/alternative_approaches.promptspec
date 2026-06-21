@@ -1,0 +1,23 @@
+pattern AlternativeApproaches
+category META_DIRECTIVES
+
+variables {
+    task* : string
+    approach_count? : int = 3
+    compare? : bool = true
+    question? : string
+}
+
+template ```
+Given input task: {{task}}
+
+List {{approach_count}} alternative approaches.
+{{#compare}}
+
+Compare pros and cons of each.
+{{/compare}}
+{{#question}}
+
+{{question}}
+{{/question}}
+```

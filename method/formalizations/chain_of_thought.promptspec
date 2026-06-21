@@ -1,0 +1,17 @@
+pattern ChainOfThought
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+    reasoning_cue? : string = "Let's think step by step."
+}
+
+template ```
+{{reasoning_cue}}
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```

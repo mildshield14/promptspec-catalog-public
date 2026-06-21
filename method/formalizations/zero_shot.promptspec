@@ -1,0 +1,14 @@
+pattern ZeroShot
+category IN_CONTEXT_LEARNING
+
+variables {
+    question* : string
+    input_data? : string
+}
+
+template ```
+Instruction: {{question}}
+{{#input_data}}
+Input data: {{input_data}}
+{{/input_data}}
+```

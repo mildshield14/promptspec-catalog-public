@@ -1,0 +1,12 @@
+pattern RAR
+category META_DIRECTIVES
+
+variables {
+    question* : string
+}
+
+template ```
+Rephrase and expand the following question, then answer your rephrased version.
+
+Question: {{question}}
+```

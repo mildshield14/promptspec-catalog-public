@@ -1,0 +1,19 @@
+pattern FlippedInteraction
+category META_DIRECTIVES
+
+variables {
+    question* : string
+    goal_condition? : string
+    question_count? : int = 1
+}
+
+template ```
+Instead of answering directly:
+Generate {{question_count}} subquestions to ask the user.
+{{#goal_condition}}
+
+Stop when {{goal_condition}} is satisfied.
+{{/goal_condition}}
+
+{{question}}
+```

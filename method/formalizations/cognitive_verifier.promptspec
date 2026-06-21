@@ -1,0 +1,16 @@
+pattern CognitiveVerifier
+category META_DIRECTIVES
+
+variables {
+    question* : string
+    subquestion_count? : int = 3
+}
+
+template ```
+Given input question: {{question}}
+
+Generate {{subquestion_count}} subquestions.
+
+Answer each subquestion.
+Combine subanswers into final answer.
+```

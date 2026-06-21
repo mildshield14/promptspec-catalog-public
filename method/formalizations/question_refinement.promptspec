@@ -1,0 +1,17 @@
+pattern QuestionRefinement
+category META_DIRECTIVES
+
+variables {
+    raw_question* : string
+    ask_confirmation? : bool = true
+}
+
+template ```
+Take input query: {{raw_question}}
+
+Suggest a refined version.
+{{#ask_confirmation}}
+
+Ask user to confirm refinement.
+{{/ask_confirmation}}
+```

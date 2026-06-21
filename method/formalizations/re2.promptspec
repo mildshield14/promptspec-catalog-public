@@ -1,0 +1,15 @@
+pattern RE2
+category META_DIRECTIVES
+
+variables {
+    question* : string
+    input_data? : string
+}
+
+template ```
+Read the question again: {{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+Now answer the question.
+```

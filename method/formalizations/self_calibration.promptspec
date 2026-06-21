@@ -1,0 +1,15 @@
+pattern SelfCalibration
+category OUTPUT_CONTROL
+
+variables {
+    question* : string
+    threshold? : int = 60
+}
+
+trigger AFTER_ANSWER
+
+template ```
+Answer the question: {{question}}
+Then state your confidence (0-100%) that the answer is correct, with a brief justification.
+If confidence is below {{threshold}}, revise or abstain.
+```

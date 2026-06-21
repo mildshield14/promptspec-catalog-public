@@ -1,0 +1,18 @@
+pattern InstructionSelection
+category META_DIRECTIVES
+
+variables {
+    instructions+ : list
+    task* : string
+    input_data* : string
+}
+
+template ```
+Candidate instructions:
+{{^instructions}}
+  - {{.}}
+{{/instructions}}
+Select the instruction best suited to {{task}}, state your choice, then carry out the task using it.
+
+{{input_data}}
+```
