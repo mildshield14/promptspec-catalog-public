@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the PromptSpec public pattern catalog.
+"""Validate the PromptSpec pattern catalog.
 
 Checks:
   - All pattern IDs are unique

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Integrity tests for the PromptSpec public pattern catalog."""
+"""Integrity tests for the PromptSpec pattern catalog."""
 from __future__ import annotations
 
 import json
@@ -82,7 +82,7 @@ class TestSchemaConformance:
         validate(instance=data, schema=schema)
 
 
-class TestPublicArtifactProvenance:
+class TestArtifactProvenance:
     def test_no_production_prompt_ids(self):
         """Ensure no production-style prompt IDs (UUIDs) appear."""
         import re
@@ -115,8 +115,8 @@ class TestDocumentation:
     def test_terminology_exists(self):
         assert (ROOT / "docs" / "terminology.md").exists()
 
-    def test_confidentiality_doc_exists(self):
-        assert (ROOT / "docs" / "confidentiality.md").exists()
-
     def test_methodology_exists(self):
         assert (ROOT / "docs" / "methodology_summary.md").exists()
+
+    def test_formalization_grammar_exists(self):
+        assert (ROOT / "docs" / "formalization_grammar.md").exists()

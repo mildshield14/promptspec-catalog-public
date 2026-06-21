@@ -1,0 +1,307 @@
+Pattern Name,Category,Component use,Description,Example,Placeholder example,Subcategory
+Zero-Shot Prompting,In-context Learning,Directive,Provide no examples to guide the task.,"Translate English to French. 
+
+Example:
+Input: Night
+Output: Nuit
+
+Now apply to:
+Morning","Instruction: {QUESTION}
+Input data: {INPUT_DATA}
+
+",Zero-shot
+Few-Shot Prompting,In-context Learning,"Directive, Examples",Provide a few exemplar input-output pairs to guide the model.,"Translate English to French.
+
+Examples:
+Input: Night
+Output: Nuit
+Input: Morning
+Output: Matin
+Input: Fall
+Output: Automne
+
+Now apply to:
+Winter","Instruction: {QUESTION}
+Examples:
+Input: {EXAMPLE_INPUT_1}
+Output: {EXAMPLE_OUTPUT_1}
+Input: {EXAMPLE_INPUT_2}  Output: {EXAMPLE_OUTPUT_2}
+
+Now apply to: {INPUT_DATA}
+",Few-shot
+Chain-of-Thought (CoT),Reasoning,Procedural Steps,Encourage step-by-step reasoning before final answer.,"Let’s think step by step.
+
+Solve the following math problem:
+
+Roger has 5 apples and gives 2 to Josh and 1 to Jane. How much is left?","Let’s think step by step.
+
+{QUESTION}
+{INPUT_DATA}
+",Chain-of-Thought
+Complex CoT,Reasoning,Procedural Steps,Generate multiple reasoning chains and prefer answers supported by the most complex and detailed chains.,"Solve the following problem step by step. Generate multiple reasoning paths, making each as detailed as possible.
+Among the most complex and detailed paths, take the majority answer as the final answer.
+
+Solve the following math problem:
+
+{QUESTION}
+{INPUT_DATA}","Generate {PATH_COUNT} detailed reasoning paths for the following question.
+Prioritize the most complex and detailed paths, then use their majority answer as the final answer.
+
+{QUESTION}
+{INPUT_DATA}",Chain-of-Thought
+Structured CoT (SCoT),Reasoning,"Output Format/Style, Procedural Steps","Structure reasoning with program-like constructs (loops, branches).","Sequencing: Initialize sum = 0
+Looping: FOR i=1..10 IF i is even THEN sum += i
+End with final answer.
+","Use structured reasoning constructs:
+- Sequencing: {STEP_1}, {STEP_2}, …
+- Branching: IF {CONDITION} THEN {ACTION}
+- Looping: FOR {ITEM} IN {SET} DO {ACTION}
+End with final answer.
+
+{QUESTION}
+{INPUT_DATA}",Chain-of-Thought
+Plan-and-Solve (PS / PS+),Reasoning,Procedural Steps,"First plan sub-problems, then solve them step by step.","First, generate a clear plan outlining the steps needed to solve the problem.
+Then, follow the plan step by step to produce the final answer.
+
+Question:
+If a train travels 120 km in 2 hours, and then 180 km in 3 hours, what is its average speed across the whole trip?
+","Step 1: Generate a high-level plan of solution steps: {PLAN}
+Step 2: Execute each step in order.
+Step 3: Produce final answer.
+
+{QUESTION}
+{INPUT_DATA}",Planning
+Least-to-Most,Reasoning,Procedural Steps,"Decompose into easiest sub-problems first, then harder ones.","Solve the following problem step by step. First, decompose the problem into smaller subproblems.
+Then, solve each subproblem in sequence.
+Finally, combine the solutions to produce the final answer.
+
+Question:
+A school cafeteria has 312 apples. They want to distribute them equally to 24 students. Each student eats 2 apples, and the rest are saved. How many apples are saved?
+
+","{QUESTION}
+{INPUT_DATA}
+
+Decompose problem into simpler subproblems: {SUBPROBLEM_1}, {SUBPROBLEM_2}, …
+
+Solve each subproblem in sequence.
+
+Combine subproblem solutions into final answer.
+",Decomposition
+Role / Persona Prompting,Context Control,"Context, Output Format/Style, Profile/Role",Adopt a role/persona to shape style/voice.,"Act as a helpful math tutor.
+Provide outputs that a helpful math tutor would create
+
+Explain how to solve the following equation step by step:
+2x + 5 = 15","Act as {PERSONA}
+Provide outputs that {PERSONA} would create
+
+{QUESTION}
+{INPUT_DATA}
+",Role & perspective
+Reverse CoT,Reasoning,Procedural Steps,"Generate reasoning steps after giving the answer, to simulate justification.","Please answer the question.
+First, state the final answer directly.
+Then, explain the reasoning that justifies your answer.
+ “The answer is 57. Reasoning: Because 23+47…”","{QUESTION}
+{INPUT_DATA}
+
+First, output the final answer only.
+Then, generate the reasoning steps that justify the answer.
+",Chain-of-Thought
+SelfVerification,Output Control,"Constraints, Procedural Steps",Model checks and verifies its own answers before finalizing.,"Step 1: Generate an initial answer.
+Step 2: Verify whether the answer satisfies the requirements.
+Step 3: If verification fails, explain the issues.
+Final Answer: {final answer}
+
+Question:
+What is the capital of Australia?
+Final Answer: Canberra
+","Step 1: Generate an initial answer: {ANSWER_1}
+
+Step 2: Verify whether {ANSWER_1} satisfies constraints: {CONSTRAINTS}
+
+Step 3: If verification fails, explain issue and correct.
+
+Final Answer = {VERIFIED_ANSWER}
+
+{{QUESTION}
+{INPUT_DATA}",Verification
+SelfCalibration,Output Control,"Constraints, Procedural Steps","After answering, the model estimates its confidence that the answer is correct and revises or abstains when that confidence is low.","Answer the question. Then state your confidence from 0–100% that the answer is correct, with a one-line justification. If your confidence is below 60%, revise your answer or say you are not sure.
+
+Question: What is the boiling point of water at the summit of Mount Everest?","Answer the question: {QUESTION}
+Then state your confidence (0–100%) that the answer is correct, with a brief justification.
+If confidence is below {THRESHOLD}, revise or abstain.",Verification
+FactCheckList,Output Control,"Constraints, Procedural Steps",Use a checklist to confirm factual accuracy of the output.,"Extract facts from output: {Capital of Australia = Canberra}
+
+Insert fact list at end of answer
+
+Ensure facts are fundamental to correctness.
+","Extract facts from output: {FACT_1}, {FACT_2}, …
+
+Insert fact list at {OUTPUT_LOCATION}
+
+Ensure facts are fundamental to correctness.
+
+{QUESTION}
+{INPUT_DATA}",Verification
+Reflection,Output Control,"Constraints, Procedural Steps","Model reflects on its first output, critiques, and improves it.","Whenever you generate an answer
+Explain the reasoning and assumptions behind your
+answer
+(Optional) ...so that I can improve my question","Step 1: Generate initial answer: {ANSWER_1}
+Step 2: Critique reasoning and assumptions in {ANSWER_1}
+Step 3: Revise output based on critique.
+Final Answer = {ANSWER_REVISED}
+
+
+{QUESTION}
+{INPUT_DATA}",Verification
+OutputAutomater,Output Control,Output Format/Style,"The model outputs an executable artifact (typically a script) that automates the steps it recommends, instead of only describing them.","Whenever your response includes steps a user would otherwise carry out by hand, also output a runnable Bash script that performs those steps automatically.
+
+Task: set up a Python virtual environment and install the project's dependencies.","Whenever your output contains at least one manual step, generate an executable {LANGUAGE} script that automates those steps.
+
+Task: {TASK}",Output formatting
+Recipe,Output Control,"Directive, Procedural Steps",Provide a repeatable recipe-style sequence for solving tasks.,"List ordered steps: STEP_1 = Preheat oven, STEP_2 = Mix flour and sugar, STEP_3 = Bake for 30 minutes
+Fill in missing steps if necessary.
+Identify unnecessary steps if present.
+","I would like to achieve {INPUT_DATA}.
+Provide a complete sequence of steps for me.
+Fill in any missing steps.
+Identify any unnecessary steps.
+",Procedural
+Template,Output Control,"Directive, Output Format/Style",Use a reusable template to structure answers consistently.,,"Use template: {TEMPLATE}
+
+Insert content into placeholders: {PLACEHOLDER_1}, {PLACEHOLDER_2}, …
+
+Preserve formatting of template.
+
+{QUESTION}
+{INPUT_DATA}",Output formatting
+VisualizationGenerator,Output Control,Output Format/Style,"Generate visual or tabular representations (charts, tables).","Generate visualization: bar chart
+Structure data for tool: matplotlib
+Output must be formatted for visualization.
+","Generate visualization: {VISUALIZATION_TYPE}
+
+Structure data for tool: {TOOL}
+
+Output must be formatted for visualization.
+
+{QUESTION}
+{INPUT_DATA}",Output formatting
+SchemaSpecs,Output Control,Output Format/Style,Define schema/structure the model must follow.,"Output must follow schema: {Title:…, Author:…, Year:…}”","Force output into schema: {SCHEMA}
+
+Populate schema fields: {FIELD_1}, {FIELD_2}, …
+
+{QUESTION}",Schema specification
+FlippedInteraction,Meta-Directives,Directive,Model asks the user questions instead of directly answering.,"I would like you to ask me questions to achieve X
+You should ask questions until this condition is met or
+to achieve this goal (alternatively, forever)
+(Optional) ask me the questions one at a time, two at
+a time, etc.","Instead of answering directly:
+Generate subquestions to ask user: {Q1}, {Q2}, …
+
+Stop when {GOAL_CONDITION} is satisfied.
+
+{QUESTION}",Interaction
+GamePlay,Meta-Directives,Directive,Frame the task as a game to increase engagement.,"Create a game around practicing French vocabulary.
+The game must define one or more fundamental rules.
+The rules should constrain how the user can respond.
+The interaction must proceed according to the defined rules.
+","Frame task as a game: {GAME_NAME}
+
+Define rules: {RULE_1}, {RULE_2}, …
+
+Interaction must proceed according to rules.
+
+{QUESTION}",Interaction
+InfiniteGeneration,Meta-Directives,Directive,"Model generates continuously, with prompts to “keep going.”","I would like you to generate a name
+and job forever. I am going to provide a
+template for your output. Everything in all caps is a
+placeholder. Any time that you generate text, try to
+fit it into one of the placeholders that I list. Please
+preserve the formatting and overall template that I
+provide: https://myapi.com/NAME/profile/JOB","Continuously generate {OUTPUT_TYPE}
+
+Batch size = {N} outputs per turn
+
+Stop when {STOP_CONDITION}
+
+{QUESTION}
+",Interaction
+Question Refinement,Meta-Directives,Directive,Improve or reformulate the user’s query for clarity.,"Within scope of cybersecurity and security risks, suggest a better version of the question
+to use instead
+(Optional) prompt me if I would like to use the better
+version instead
+
+How to use Windows?","Take input query: {RAW_QUESTION}
+
+Suggest a refined version: {REFINED_QUESTION}
+
+(Optional) Ask user to confirm refinement.
+
+{QUESTION}
+",Enhancement
+RAR,Meta-Directives,"Directive, Procedural Steps","In one prompt, the model first rephrases and expands the question, then answers the rephrased version.","Rephrase and expand the question below, then answer the expanded version.
+
+Question: Was Ada Lovelace born before the telephone was invented?","Rephrase and expand the following question, then answer your rephrased version.
+
+Question: {QUESTION}",Refinement
+Alternative Approaches,Meta-Directives,"Directive, Procedural Steps",Suggest multiple different ways to solve the same problem.,"Within scope X, if there are alternative ways to accom-
+plish the same thing, list the best alternate approaches
+(Optional) compare/contrast the pros and cons of each
+approach
+(Optional) include the original way that I asked
+(Optional) prompt me for which approach I would like
+to use","Given input task: {TASK}
+
+List alternative approaches: {APPROACH_1}, {APPROACH_2}, …
+
+(Optional) Compare pros/cons of each.
+
+{QUESTION}
+",Enhancement
+RE2,Meta-Directives,Directive,"Re-reading: instruct the model to read the question again before answering, to improve reasoning.","Read the question again before answering.
+
+Question: Which city hosted the 2016 Summer Olympics?
+Now answer the question.","Read the question again: {QUESTION}
+{INPUT_DATA}
+
+Now answer the question.",Refinement
+RefusalBreaker,Meta-Directives,"Constraints, Directive",Overcome model refusals by reframing the request.,"Whenever you can’t answer a question
+Explain why you can’t answer the question
+Provide one or more alternative wordings of the ques-
+tion that you could answer","If refusal occurs:
+Step 1: State refusal reason.
+Step 2: Reframe request into 
+alternative query: {ALT_QUERY}
+
+{QUESTION}
+",Enhancement
+InstructionSelection,Meta-Directives,"Directive, Procedural Steps","Given several candidate instructions for a task, the model selects the most appropriate one and then carries out the task using it.","Here are three candidate instructions for summarizing a contract:
+A) ""Summarize the contract in plain English.""
+B) ""List each obligation and its responsible party.""
+C) ""Extract key dates, amounts, and termination clauses.""
+Choose the one best suited to a compliance review, state your choice, then apply it to the contract below.
+
+Contract: {CONTRACT}","Candidate instructions: {INST_1}, {INST_2}, … {INST_N}
+Select the instruction best suited to {TASK}, state your choice, then carry out the task using it.
+
+{INPUT_DATA}",Refinement
+CognitiveVerifier,Meta-Directives,"Directive, Procedural Steps",Add explicit verification of reasoning correctness.,"When you are asked a question, follow these rules
+Generate a number of additional questions that would
+help more accurately answer the question
+Combine the answers to the individual questions to
+produce the final answer to the overall question","Given input question: {QUESTION}
+
+Generate subquestions: {Q1}, {Q2}, …
+
+Answer each subquestion.
+Combine subanswers into final answer.
+",Enhancement
+ContextManager,Context Control,"Context, Directive, Procedural Steps",Explicitly control what context the model uses to avoid drift.,"Within scope X
+Please consider Y
+Please ignore Z
+(Optional) start over","Set scope: {SCOPE}
+Include only: {INCLUDE_ITEMS}
+Exclude always: {EXCLUDE_ITEMS}
+If signal = ""reset"", discard accumulated context and restart within {SCOPE}.
+
+{QUESTION}
+{INPUT_DATA}",Context grounding
