@@ -1,45 +1,38 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PromptSpec Pattern Catalog</title>
     <meta
       name="description"
-      content="A public catalog browser for PromptSpec prompt-engineering patterns."
-    >
-    <link rel="stylesheet" href="styles.css">
+      content="A taxonomy browser for PromptSpec prompt-engineering patterns."
+    />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="site-header">
       <nav class="top-nav" aria-label="Primary">
         <a class="brand" href="index.html">PromptSpec Catalog</a>
-        <a href="https://github.com/mildshield14/promptspec-catalog-public/blob/main/catalog/patterns.json">
-          Catalog JSON
-        </a>
-        <a href="https://github.com/mildshield14/promptspec-catalog-public">GitHub</a>
+        <a href="../catalog/patterns.json">Catalog JSON</a>
       </nav>
 
       <section class="hero" aria-labelledby="page-title">
-        <p class="eyebrow">Public research artifact</p>
+        <p class="eyebrow">Research artifact</p>
         <h1 id="page-title">PromptSpec Pattern Catalog</h1>
-        <p class="subtitle">A public catalog of prompt-engineering patterns.</p>
+        <p class="subtitle">A catalog of prompt-engineering patterns.</p>
         <p class="hero-copy">
-          This website visualizes the public catalog as a lightweight taxonomy
-          browser. The full PromptSpec model is described in the paper and is
-          outside the scope of this repository.
+          This website visualizes the taxonomy as a lightweight browser. The
+          full PromptSpec model is described in the paper and is outside the
+          scope of this repository.
         </p>
         <div class="hero-actions" aria-label="Catalog links">
-          <a
-            class="button primary"
-            href="https://github.com/mildshield14/promptspec-catalog-public/blob/main/catalog/patterns.json"
-          >
+          <a class="button primary" href="../catalog/patterns.json">
             View catalog JSON
           </a>
-          <a class="button" href="https://github.com/mildshield14/promptspec-catalog-public">
-            View GitHub repository
-          </a>
-          <a class="button muted" href="#" aria-disabled="true">Paper/arXiv link placeholder</a>
+          <a class="button muted" href="#" aria-disabled="true"
+            >Paper/arXiv link placeholder</a
+          >
         </div>
       </section>
     </header>
@@ -51,46 +44,36 @@
             <p class="eyebrow">Taxonomy browser</p>
             <h2 id="browser-title">Browse patterns</h2>
           </div>
-          <p class="count" id="pattern-count" aria-live="polite">Loading patterns...</p>
+          <p class="count" id="pattern-count" aria-live="polite">
+            Loading patterns...
+          </p>
         </div>
 
         <noscript>
           <div class="notice" role="status">
             JavaScript is required to load the interactive catalog from
             <code>catalog/patterns.json</code>. You can still read the static
-            Markdown catalog in <a href="../PATTERN_CATALOG.md">PATTERN_CATALOG.md</a>.
+            Markdown catalog in
+            <a href="../PATTERN_CATALOG.md">PATTERN_CATALOG.md</a>.
           </div>
         </noscript>
 
         <div class="notice" id="load-message" role="status">
-          The interactive browser loads directly from <code>catalog/patterns.json</code>.
-          If it does not load, use the catalog JSON or Markdown catalog links.
+          The interactive browser loads directly from
+          <code>catalog/patterns.json</code>. If it does not load, use the
+          catalog JSON or Markdown catalog links.
         </div>
 
         <form class="controls" id="catalog-controls" role="search">
           <div class="field search-field">
-            <label for="search-input">Search patterns</label>
+            <label for="search-input">Search taxonomy</label>
             <input
               id="search-input"
               name="search"
               type="search"
               autocomplete="off"
-              placeholder="Search names, descriptions, cues, or notes"
-            >
-          </div>
-
-          <div class="field">
-            <label for="category-filter">Filter by family</label>
-            <select id="category-filter" name="category">
-              <option value="">All families</option>
-            </select>
-          </div>
-
-          <div class="field hidden" id="source-status-field">
-            <label for="source-status-filter">Filter by source status</label>
-            <select id="source-status-filter" name="sourceStatus">
-              <option value="">All source statuses</option>
-            </select>
+              placeholder="Search names, descriptions, or components"
+            />
           </div>
         </form>
 
@@ -98,18 +81,15 @@
           No patterns match the current search and filters.
         </div>
 
-        <div class="card-grid" id="pattern-grid" aria-live="polite"></div>
+        <div class="taxonomy-tree" id="taxonomy-tree" aria-live="polite"></div>
       </section>
     </main>
 
     <footer class="site-footer">
       <p>
-        <a href="https://github.com/mildshield14/promptspec-catalog-public">
-          GitHub repository
-        </a>
+        <a href="../PATTERN_CATALOG.md">Markdown catalog</a>
       </p>
       <p>No raw prompts or confidential data are included.</p>
-      <p>Citation placeholder: add citation details once <code>CITATION.cff</code> is finalized.</p>
     </footer>
 
     <script src="app.js" defer></script>

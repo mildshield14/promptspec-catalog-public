@@ -1,10 +1,10 @@
 # Methodology Summary
 
-This document gives a high-level overview of how the **PromptSpec Pattern Catalog** was constructed. It covers only the catalog published in this artifact; the broader PromptSpec model and its evaluation are described in the associated publication.
+This document gives a high-level overview of how the **PromptSpec Pattern Catalog** was constructed.
 
 ## Pattern Identification
 
-Patterns were identified through literature review. They were not empirically observed in a prompt corpus, and this public artifact does not claim corpus-level frequency or occurrence evidence.
+Patterns were identified through literature review. They were not empirically observed in a prompt corpus.
 
 ### Literature Review
 A review of prompt-engineering literature was conducted to identify established patterns. Sources include:
@@ -24,8 +24,3 @@ The 29 patterns were organized into a two-level taxonomy:
 - **Category**: 5 high-level groups (In-Context Learning, Reasoning, Output Control, Context Control, Meta Directives)
 - **Subcategory**: Finer-grained classification within each category
 
-## Limitations
-
-- Pattern frequency statistics are not included in this public artifact.
-- Pattern definitions are literature-derived and should not be interpreted as empirically observed corpus annotations.
-- This artifact publishes the pattern catalog only; structural composition and the queryable graph are covered in the publication.
