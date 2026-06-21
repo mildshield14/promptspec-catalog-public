@@ -1,0 +1,24 @@
+pattern LeastToMost
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+    subproblems... : list
+}
+
+template ```
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+
+Decompose problem into simpler subproblems:
+{{^subproblems}}
+  - {{.}}
+{{/subproblems}}
+
+Solve each subproblem in sequence.
+
+Combine subproblem solutions into final answer.
+```

@@ -1,29 +1,47 @@
 (function () {
   "use strict";
 
-  var REPOSITORY_URL = "https://github.com/mildshield14/promptspec-catalog-public";
-  var RAW_CATALOG_URL =
-    "https://raw.githubusercontent.com/mildshield14/promptspec-catalog-public/main/catalog/patterns.json";
-  var CATALOG_PATHS = ["../catalog/patterns.json", "catalog/patterns.json", RAW_CATALOG_URL];
+  var CATALOG_PATHS = ["../catalog/patterns.json", "catalog/patterns.json"];
+
+  var CATEGORY_ORDER = [
+    "IN_CONTEXT_LEARNING",
+    "REASONING",
+    "OUTPUT_CONTROL",
+    "CONTEXT_CONTROL",
+    "META_DIRECTIVES"
+  ];
+
+  var CATEGORY_LABELS = {
+    IN_CONTEXT_LEARNING: "In-Context Learning",
+    REASONING: "Reasoning",
+    OUTPUT_CONTROL: "Output Control",
+    CONTEXT_CONTROL: "Context Control",
+    META_DIRECTIVES: "Meta-Directives"
+  };
+
+  var COMPONENT_LABELS = {
+    PROFILE_ROLE: "Profile/Role",
+    DIRECTIVE: "Directive",
+    CONTEXT: "Context",
+    PROCEDURAL_STEPS: "Procedural Steps",
+    EXAMPLES: "Examples",
+    OUTPUT_FORMAT: "Output Format/Style",
+    CONSTRAINTS: "Constraints"
+  };
 
   var state = {
     patterns: [],
     filtered: [],
     search: "",
-    category: "",
-    sourceStatus: "",
-    hasSourceStatus: false
+    expanded: {}
   };
 
   var elements = {
     count: document.getElementById("pattern-count"),
-    grid: document.getElementById("pattern-grid"),
+    tree: document.getElementById("taxonomy-tree"),
     empty: document.getElementById("empty-state"),
     message: document.getElementById("load-message"),
-    search: document.getElementById("search-input"),
-    category: document.getElementById("category-filter"),
-    sourceStatusField: document.getElementById("source-status-field"),
-    sourceStatus: document.getElementById("source-status-filter")
+    search: document.getElementById("search-input")
   };
 
   function text(value) {
@@ -36,26 +54,19 @@
     return String(value);
   }
 
-  function normalizeCategory(value) {
-    return text(value)
-      .toLowerCase()
-      .split("_")
-      .filter(Boolean)
-      .map(function (part) {
-        return part.charAt(0).toUpperCase() + part.slice(1);
-      })
-      .join(" ");
+  function labelCategory(value) {
+    return CATEGORY_LABELS[value] || text(value);
   }
 
-  function uniqueValues(patterns, key) {
-    var seen = {};
-    patterns.forEach(function (pattern) {
-      var value = text(pattern[key]).trim();
-      if (value) {
-        seen[value] = true;
-      }
-    });
-    return Object.keys(seen).sort();
+  function labelComponent(value) {
+    return COMPONENT_LABELS[value] || text(value);
+  }
+
+  function slug(value) {
+    return text(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
   }
 
   function setMessage(message, isError) {
@@ -80,135 +91,175 @@
     return element;
   }
 
-  function appendDetail(parent, label, value, asPre) {
-    var body = text(value).trim();
-    if (!body) {
-      return;
+  function buttonNode(label, count, level, key, expanded) {
+    var button = createElement("button", "tree-toggle level-" + level);
+    var panelId = "panel-" + slug(key);
+    button.type = "button";
+    button.dataset.toggleKey = key;
+    button.setAttribute("aria-expanded", expanded ? "true" : "false");
+    button.setAttribute("aria-controls", panelId);
+
+    button.appendChild(createElement("span", "toggle-mark", expanded ? "-" : "+"));
+    button.appendChild(createElement("span", "node-label", label));
+    if (count !== null && count !== undefined) {
+      button.appendChild(createElement("span", "node-count", String(count)));
     }
-
-    var block = createElement("div", "detail-block");
-    block.appendChild(createElement("span", "detail-label", label));
-    block.appendChild(asPre ? createElement("pre", "", body) : createElement("p", "meta-text", body));
-    parent.appendChild(block);
+    return button;
   }
 
-  function populateSelect(select, values, labelFormatter) {
-    values.forEach(function (value) {
-      var option = document.createElement("option");
-      option.value = value;
-      option.textContent = labelFormatter ? labelFormatter(value) : value;
-      select.appendChild(option);
-    });
+  function panelNode(key, expanded) {
+    var panel = createElement("div", "tree-panel");
+    panel.id = "panel-" + slug(key);
+    panel.hidden = !expanded;
+    return panel;
   }
 
-  function renderFilters() {
-    populateSelect(elements.category, uniqueValues(state.patterns, "category"), normalizeCategory);
-
-    var sourceStatuses = uniqueValues(state.patterns, "sourceStatus");
-    state.hasSourceStatus = sourceStatuses.length > 0;
-    if (state.hasSourceStatus) {
-      populateSelect(elements.sourceStatus, sourceStatuses);
-      elements.sourceStatusField.classList.remove("hidden");
-    }
-  }
-
-  function patternMatches(pattern) {
-    var query = state.search.trim().toLowerCase();
-    var haystack = [
+  function patternHaystack(pattern) {
+    return [
       pattern.name,
       pattern.description,
-      pattern.detectionInstruction,
-      pattern.notes,
-      pattern.aliases,
+      pattern.subcategory,
       pattern.category,
-      pattern.sourceStatus
+      pattern.componentTypes,
+      pattern.detectionInstruction,
+      pattern.notes
     ]
       .map(text)
       .join(" ")
       .toLowerCase();
-
-    if (query && haystack.indexOf(query) === -1) {
-      return false;
-    }
-    if (state.category && text(pattern.category) !== state.category) {
-      return false;
-    }
-    if (state.sourceStatus && text(pattern.sourceStatus) !== state.sourceStatus) {
-      return false;
-    }
-    return true;
   }
 
-  function renderCard(pattern) {
-    var card = createElement("article", "pattern-card");
-    card.setAttribute("aria-labelledby", pattern.id ? "pattern-" + pattern.id : "");
-
-    var head = createElement("div", "card-head");
-    var title = createElement("h3", "", text(pattern.name) || "Untitled pattern");
-    if (pattern.id) {
-      title.id = "pattern-" + pattern.id;
+  function patternMatches(pattern) {
+    var query = state.search.trim().toLowerCase();
+    if (!query) {
+      return true;
     }
-    head.appendChild(title);
-
-    if (pattern.category) {
-      var tags = createElement("ul", "tag-list");
-      var tag = createElement("li", "tag", normalizeCategory(pattern.category));
-      tags.appendChild(tag);
-      head.appendChild(tags);
-    }
-    card.appendChild(head);
-
-    card.appendChild(createElement("p", "description", text(pattern.description) || "No description provided."));
-
-    if (pattern.detectionInstruction) {
-      var cue = createElement("p", "cue");
-      cue.appendChild(createElement("strong", "", "Cue: "));
-      cue.appendChild(document.createTextNode(text(pattern.detectionInstruction)));
-      card.appendChild(cue);
-    }
-
-    if (pattern.sourceStatus) {
-      var status = createElement("p", "meta-text");
-      status.appendChild(createElement("strong", "", "Source status: "));
-      status.appendChild(document.createTextNode(text(pattern.sourceStatus)));
-      card.appendChild(status);
-    }
-
-    if (pattern.aliases || pattern.notes) {
-      var meta = createElement("p", "meta-text");
-      if (pattern.aliases) {
-        meta.appendChild(createElement("strong", "", "Aliases: "));
-        meta.appendChild(document.createTextNode(text(pattern.aliases)));
-      } else {
-        meta.appendChild(createElement("strong", "", "Notes: "));
-        meta.appendChild(document.createTextNode(text(pattern.notes)));
-      }
-      card.appendChild(meta);
-    }
-
-    var details = document.createElement("details");
-    var summary = document.createElement("summary");
-    summary.textContent = "View details";
-    details.appendChild(summary);
-
-    var detailBody = createElement("div", "details-body");
-    appendDetail(detailBody, "Description", pattern.description, false);
-    appendDetail(detailBody, "Detection instruction", pattern.detectionInstruction, false);
-    appendDetail(detailBody, "Placeholder form", pattern.placeholderExample, true);
-    appendDetail(detailBody, "Example", pattern.example, true);
-    appendDetail(detailBody, "Notes", pattern.notes, false);
-    details.appendChild(detailBody);
-    card.appendChild(details);
-
-    return card;
+    return patternHaystack(pattern).indexOf(query) !== -1;
   }
 
-  function renderPatterns() {
+  function groupPatterns(patterns) {
+    var grouped = {};
+    patterns.forEach(function (pattern) {
+      var category = pattern.category || "UNCATEGORIZED";
+      var subcategory = pattern.subcategory || "Uncategorized";
+      grouped[category] = grouped[category] || {};
+      grouped[category][subcategory] = grouped[category][subcategory] || [];
+      grouped[category][subcategory].push(pattern);
+    });
+    Object.keys(grouped).forEach(function (category) {
+      Object.keys(grouped[category]).forEach(function (subcategory) {
+        grouped[category][subcategory].sort(function (a, b) {
+          return text(a.name).localeCompare(text(b.name));
+        });
+      });
+    });
+    return grouped;
+  }
+
+  function countCategory(subgroups) {
+    return Object.keys(subgroups).reduce(function (total, subcategory) {
+      return total + subgroups[subcategory].length;
+    }, 0);
+  }
+
+  function isExpanded(key, defaultValue, forceExpanded) {
+    if (forceExpanded) {
+      return true;
+    }
+    if (Object.prototype.hasOwnProperty.call(state.expanded, key)) {
+      return state.expanded[key];
+    }
+    return defaultValue;
+  }
+
+  function renderComponentTags(pattern) {
+    var tags = createElement("ul", "tag-list");
+    (pattern.componentTypes || []).forEach(function (component) {
+      tags.appendChild(createElement("li", "tag", labelComponent(component)));
+    });
+    return tags;
+  }
+
+  function renderPatternDetails(pattern) {
+    var details = createElement("div", "pattern-details");
+
+    var componentBlock = createElement("div", "detail-block");
+    componentBlock.appendChild(createElement("span", "detail-label", "Component use"));
+    componentBlock.appendChild(renderComponentTags(pattern));
+    details.appendChild(componentBlock);
+
+    var description = createElement("div", "detail-block");
+    description.appendChild(createElement("span", "detail-label", "Description"));
+    description.appendChild(createElement("p", "meta-text", text(pattern.description)));
+    details.appendChild(description);
+
+    if (pattern.formalization) {
+      var formalization = createElement("div", "detail-block");
+      formalization.appendChild(createElement("span", "detail-label", "Formalization"));
+      formalization.appendChild(createElement("pre", "", text(pattern.formalization)));
+      details.appendChild(formalization);
+    }
+
+    return details;
+  }
+
+  function renderPattern(pattern, queryActive) {
+    var key = "pattern:" + pattern.id;
+    var expanded = isExpanded(key, false, queryActive);
+    var item = createElement("div", "tree-item pattern-item");
+    item.appendChild(buttonNode(text(pattern.name), null, "pattern", key, expanded));
+
+    var panel = panelNode(key, expanded);
+    panel.appendChild(renderPatternDetails(pattern));
+    item.appendChild(panel);
+    return item;
+  }
+
+  function renderTree() {
     state.filtered = state.patterns.filter(patternMatches);
-    elements.grid.textContent = "";
+    var queryActive = Boolean(state.search.trim());
+    var grouped = groupPatterns(state.filtered);
+    var categories = CATEGORY_ORDER.filter(function (category) {
+      return grouped[category];
+    }).concat(
+      Object.keys(grouped)
+        .filter(function (category) {
+          return CATEGORY_ORDER.indexOf(category) === -1;
+        })
+        .sort()
+    );
 
-    state.filtered.forEach(function (pattern) {
-      elements.grid.appendChild(renderCard(pattern));
+    elements.tree.textContent = "";
+    categories.forEach(function (category) {
+      var subgroups = grouped[category];
+      var categoryKey = "category:" + category;
+      var categoryExpanded = isExpanded(categoryKey, true, queryActive);
+      var categoryItem = createElement("section", "tree-item category-item");
+      categoryItem.appendChild(
+        buttonNode(labelCategory(category), countCategory(subgroups), "category", categoryKey, categoryExpanded)
+      );
+
+      var categoryPanel = panelNode(categoryKey, categoryExpanded);
+      Object.keys(subgroups)
+        .sort()
+        .forEach(function (subcategory) {
+          var patterns = subgroups[subcategory];
+          var subcategoryKey = categoryKey + ":subcategory:" + subcategory;
+          var subcategoryExpanded = isExpanded(subcategoryKey, false, queryActive);
+          var subcategoryItem = createElement("div", "tree-item subcategory-item");
+          subcategoryItem.appendChild(
+            buttonNode(subcategory, patterns.length, "subcategory", subcategoryKey, subcategoryExpanded)
+          );
+
+          var subcategoryPanel = panelNode(subcategoryKey, subcategoryExpanded);
+          patterns.forEach(function (pattern) {
+            subcategoryPanel.appendChild(renderPattern(pattern, queryActive));
+          });
+          subcategoryItem.appendChild(subcategoryPanel);
+          categoryPanel.appendChild(subcategoryItem);
+        });
+      categoryItem.appendChild(categoryPanel);
+      elements.tree.appendChild(categoryItem);
     });
 
     elements.empty.classList.toggle("hidden", state.filtered.length > 0);
@@ -227,17 +278,17 @@
 
     elements.search.addEventListener("input", function (event) {
       state.search = event.target.value;
-      renderPatterns();
+      renderTree();
     });
 
-    elements.category.addEventListener("change", function (event) {
-      state.category = event.target.value;
-      renderPatterns();
-    });
-
-    elements.sourceStatus.addEventListener("change", function (event) {
-      state.sourceStatus = event.target.value;
-      renderPatterns();
+    elements.tree.addEventListener("click", function (event) {
+      var button = event.target.closest("button[data-toggle-key]");
+      if (!button) {
+        return;
+      }
+      var key = button.dataset.toggleKey;
+      state.expanded[key] = button.getAttribute("aria-expanded") !== "true";
+      renderTree();
     });
   }
 
@@ -273,9 +324,8 @@
           throw new Error("Catalog JSON did not contain a patterns array.");
         }
         state.patterns = data.patterns.slice();
-        renderFilters();
         wireControls();
-        renderPatterns();
+        renderTree();
         setMessage("", false);
       })
       .catch(function (error) {

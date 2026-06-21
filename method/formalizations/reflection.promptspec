@@ -1,0 +1,26 @@
+pattern Reflection
+category OUTPUT_CONTROL
+
+variables {
+    trigger? : enum = "AFTER_ANSWER" | ["ALWAYS", "AFTER_ANSWER"]
+    explain? : bool = true             "Explain reasoning"
+    assumptions? : bool = true         "State assumptions"
+    improvements? : bool = false       "Suggest improvements"
+}
+
+trigger AFTER_ANSWER
+
+template ```
+{{#trigger}}
+After generating your answer:
+{{/trigger}}
+{{#explain}}
+Explain the reasoning behind your answer.
+{{/explain}}
+{{#assumptions}}
+State any assumptions you made.
+{{/assumptions}}
+{{#improvements}}
+Suggest potential improvements.
+{{/improvements}}
+```

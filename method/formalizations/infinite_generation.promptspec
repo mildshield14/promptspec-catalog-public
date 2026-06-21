@@ -1,0 +1,21 @@
+pattern InfiniteGeneration
+category META_DIRECTIVES
+
+variables {
+    output_type* : string
+    batch_size? : int = 1
+    stop_condition? : string
+    question* : string
+}
+
+template ```
+Continuously generate {{output_type}}
+
+Batch size = {{batch_size}} outputs per turn
+{{#stop_condition}}
+
+Stop when {{stop_condition}}
+{{/stop_condition}}
+
+{{question}}
+```

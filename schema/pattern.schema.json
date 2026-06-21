@@ -24,12 +24,25 @@
           "subcategory": { "type": "string" },
           "componentTypes": {
             "type": "array",
-            "items": { "type": "string", "enum": ["PROFILE_ROLE", "DIRECTIVE", "CONTEXT", "WORKFLOW", "EXAMPLES", "OUTPUT_FORMAT", "CONSTRAINTS"] }
+            "items": { "type": "string", "enum": ["PROFILE_ROLE", "DIRECTIVE", "CONTEXT", "PROCEDURAL_STEPS", "EXAMPLES", "OUTPUT_FORMAT", "CONSTRAINTS"] }
           },
           "detectionInstruction": { "type": ["string", "null"] },
           "placeholderExample": { "type": ["string", "null"] },
           "example": { "type": ["string", "null"] },
-          "notes": { "type": ["string", "null"] }
+          "notes": { "type": ["string", "null"] },
+          "formalization": { "type": ["string", "null"] },
+          "extensions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "source"],
+              "properties": {
+                "name": { "type": "string" },
+                "source": { "type": "string" }
+              }
+            }
+          }
         }
       }
     }

@@ -1,0 +1,25 @@
+pattern Template
+category OUTPUT_CONTROL
+
+variables {
+    template* : string
+    placeholders... : list
+    question* : string
+    input_data? : string
+}
+
+template ```
+Use template: {{template}}
+
+Insert content into placeholders:
+{{^placeholders}}
+  - {{.}}
+{{/placeholders}}
+
+Preserve formatting of template.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```

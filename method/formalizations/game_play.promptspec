@@ -1,0 +1,21 @@
+pattern GamePlay
+category META_DIRECTIVES
+
+variables {
+    game_name* : string
+    rules+ : list
+    question* : string
+}
+
+template ```
+Frame task as a game: {{game_name}}
+
+Define rules:
+{{^rules}}
+  - {{.}}
+{{/rules}}
+
+Interaction must proceed according to rules.
+
+{{question}}
+```

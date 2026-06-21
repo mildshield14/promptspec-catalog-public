@@ -1,0 +1,24 @@
+pattern VisualizationGenerator
+category OUTPUT_CONTROL
+
+variables {
+    visualization_type* : string
+    tool? : string
+    question* : string
+    input_data? : string
+}
+
+template ```
+Generate visualization: {{visualization_type}}
+{{#tool}}
+
+Structure data for tool: {{tool}}
+{{/tool}}
+
+Output must be formatted for visualization.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```

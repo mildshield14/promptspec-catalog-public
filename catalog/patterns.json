@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/pattern.schema.json",
-  "catalog": "PromptSpec Pattern Catalog (Public)",
+  "catalog": "PromptSpec Pattern Catalog",
   "version": "0.1.0",
   "count": 29,
   "patterns": [
@@ -9,170 +9,315 @@
       "name": "ZeroShot",
       "description": "Provide no examples to guide the task; rely on direct instructions plus input data.",
       "category": "IN_CONTEXT_LEARNING",
-      "subcategory": "ZeroShot",
+      "subcategory": "Zero-shot",
       "componentTypes": [
         "DIRECTIVE"
       ],
       "detectionInstruction": "Absence of example input-output pairs; task relies on instruction alone.",
       "placeholderExample": "Instruction: {QUESTION}\nInput data: {INPUT_DATA}",
       "example": "Translate the following English word to French.\n\nInput: Morning",
-      "notes": "Represents the default prompting strategy when no demonstrations are provided."
+      "notes": "Represents the default prompting strategy when no demonstrations are provided.",
+      "formalization": "pattern ZeroShot\ncategory IN_CONTEXT_LEARNING\n\nvariables {\n    question* : string\n    input_data? : string\n}\n\ntemplate ```\nInstruction: {{question}}\n{{#input_data}}\nInput data: {{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Zero-Shot Prompting",
+          "source": "sahoo2024"
+        },
+        {
+          "name": "Zero-Shot Prompting",
+          "source": "schulhoff2024"
+        },
+        {
+          "name": "Basic/Standard/Vanilla Prompting",
+          "source": "vatsal2024"
+        }
+      ]
     },
     {
       "id": "few_shot",
       "name": "FewShot",
       "description": "Provide exemplar input-output pairs to guide the model.",
       "category": "IN_CONTEXT_LEARNING",
-      "subcategory": "FewShot",
+      "subcategory": "Few-shot",
       "componentTypes": [
+        "DIRECTIVE",
         "EXAMPLES"
       ],
       "detectionInstruction": "Look for explicit input-output example blocks, demonstration pairs, or 'Example:' sections.",
       "placeholderExample": "Instruction: {QUESTION}\nExamples:\nInput: {EXAMPLE_INPUT_1}\nOutput: {EXAMPLE_OUTPUT_1}\nInput: {EXAMPLE_INPUT_2}  Output: {EXAMPLE_OUTPUT_2}\n\nNow apply to: {INPUT_DATA}",
       "example": "Translate English to French.\n\nExamples:\nInput: Night\nOutput: Nuit\nInput: Morning\nOutput: Matin\nInput: Fall\nOutput: Automne\n\nNow apply to:\nWinter",
-      "notes": "Mutually exclusive with ZeroShot."
+      "notes": "Mutually exclusive with ZeroShot.",
+      "formalization": "pattern FewShot\ncategory IN_CONTEXT_LEARNING\n\nvariables {\n    task* : string              \"Description of the task\"\n    examples+ : list            \"List of example objects\"\n    num_examples? : int = 3     \"How many examples to show\"\n    selection? : enum = \"first\" | [\"first\", \"random\", \"all\"]\n}\n\ntemplate ```\nTask: {{task}}\n\nHere are some examples:\n{{^examples num_examples}}\nInput: {{input}}\nOutput: {{output}}\n{{/examples}}\n\nNow do the same for:\n```\n",
+      "extensions": [
+        {
+          "name": "Few-Shot Prompting",
+          "source": "sahoo2024"
+        },
+        {
+          "name": "Few-Shot Prompting",
+          "source": "schulhoff2024"
+        }
+      ]
     },
     {
       "id": "chain_of_thought",
       "name": "ChainOfThought",
       "description": "Encourage generic step-by-step reasoning before the final answer.",
       "category": "REASONING",
-      "subcategory": "ChainOfThought",
+      "subcategory": "Chain-of-Thought",
       "componentTypes": [
-        "WORKFLOW"
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for 'think step by step', 'reason step by step', or 'show your reasoning'.",
       "placeholderExample": "Let’s think step by step.\n\n{QUESTION}\n{INPUT_DATA}",
       "example": "Let’s think step by step.\n\nSolve the following math problem:\n\nRoger has 5 apples and gives 2 to Josh and 1 to Jane. How much is left?",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern ChainOfThought\ncategory REASONING\n\nvariables {\n    question* : string\n    input_data? : string\n    reasoning_cue? : string = \"Let's think step by step.\"\n}\n\ntemplate ```\n{{reasoning_cue}}\n\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Chain-of-Thought (CoT) Prompting",
+          "source": "fagbohun2024"
+        },
+        {
+          "name": "Chain-of-Thought (CoT) Prompting",
+          "source": "sahoo2024"
+        },
+        {
+          "name": "Chain-of-Thought (CoT) Prompting",
+          "source": "schulhoff2024"
+        },
+        {
+          "name": "Few-Shot CoT",
+          "source": "schulhoff2024"
+        },
+        {
+          "name": "Zero-Shot CoT",
+          "source": "schulhoff2024"
+        },
+        {
+          "name": "Chain-of-Thought (CoT)",
+          "source": "vatsal2024"
+        }
+      ]
     },
     {
       "id": "visualization_generator",
       "name": "VisualizationGenerator",
       "description": "Generate visual or tabular representations for tools such as charting libraries.",
       "category": "OUTPUT_CONTROL",
-      "subcategory": "OutputFormat",
+      "subcategory": "Output formatting",
       "componentTypes": [
         "OUTPUT_FORMAT"
       ],
       "detectionInstruction": "Look for requests for charts, plots, diagrams, visualizations, or tool-specific formatting.",
       "placeholderExample": "Generate visualization: {VISUALIZATION_TYPE}\n\nStructure data for tool: {TOOL}\n\nOutput must be formatted for visualization.\n\n{QUESTION}\n{INPUT_DATA}",
       "example": "Generate visualization: bar chart\nStructure data for tool: matplotlib\nOutput must be formatted for visualization.",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern VisualizationGenerator\ncategory OUTPUT_CONTROL\n\nvariables {\n    visualization_type* : string\n    tool? : string\n    question* : string\n    input_data? : string\n}\n\ntemplate ```\nGenerate visualization: {{visualization_type}}\n{{#tool}}\n\nStructure data for tool: {{tool}}\n{{/tool}}\n\nOutput must be formatted for visualization.\n\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Visualization Generator",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "persona",
       "name": "Persona",
       "description": "Adopt a role/persona to shape style and voice.",
-      "category": "OUTPUT_CONTROL",
-      "subcategory": "OutputFormat",
+      "category": "CONTEXT_CONTROL",
+      "subcategory": "Role & perspective",
       "componentTypes": [
+        "CONTEXT",
+        "OUTPUT_FORMAT",
         "PROFILE_ROLE"
       ],
       "detectionInstruction": "Look for 'Act as', 'You are', 'As a', or identity/role-setting phrases.",
       "placeholderExample": "Act as {PERSONA}\nProvide outputs that {PERSONA} would create\n\n{QUESTION}\n{INPUT_DATA}",
       "example": "Act as a helpful math tutor.\nProvide outputs that a helpful math tutor would create\n\nExplain how to solve the following equation step by step:\n2x + 5 = 15",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern Persona\ncategory CONTEXT_CONTROL\n\nvariables {\n    persona* : string\n    question* : string\n    input_data? : string\n}\n\ntemplate ```\nAct as {{persona}}\nProvide outputs that {{persona}} would create\n\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Multi-Personas Prompting",
+          "source": "fagbohun2024"
+        },
+        {
+          "name": "Role Prompting",
+          "source": "schulhoff2024"
+        },
+        {
+          "name": "Persona",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "context_manager",
       "name": "ContextManager",
       "description": "Explicitly control what context the model uses to avoid drift.",
       "category": "CONTEXT_CONTROL",
-      "subcategory": "ContextManager",
+      "subcategory": "Context grounding",
       "componentTypes": [
         "CONTEXT",
         "DIRECTIVE",
-        "WORKFLOW"
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for scope constraints, context-inclusion/exclusion directives, or grounding instructions.",
       "placeholderExample": "Set scope: {SCOPE}\nInclude only: {INCLUDE_ITEMS}\nExclude always: {EXCLUDE_ITEMS}\nIf signal = \"reset\", discard accumulated context and restart within {SCOPE}.\n\n{QUESTION}\n{INPUT_DATA}",
       "example": "Within scope X\nPlease consider Y\nPlease ignore Z\n(Optional) start over",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern ContextManager\ncategory CONTEXT_CONTROL\n\nvariables {\n    scope* : string\n    include_items... : list\n    exclude_items... : list\n    reset_signal? : string = \"reset\"\n    question* : string\n    input_data? : string\n}\n\ntemplate ```\nSet scope: {{scope}}\n{{#include_items}}\nInclude only:\n{{^include_items}}\n  - {{.}}\n{{/include_items}}\n{{/include_items}}\n{{#exclude_items}}\nExclude always:\n{{^exclude_items}}\n  - {{.}}\n{{/exclude_items}}\n{{/exclude_items}}\n{{#reset_signal}}\nIf signal = \"{{reset_signal}}\", discard accumulated context and restart within {{scope}}.\n{{/reset_signal}}\n\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Context Manager",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "recipe",
       "name": "Recipe",
       "description": "Provide a repeatable recipe-style sequence for solving tasks.",
       "category": "OUTPUT_CONTROL",
-      "subcategory": "OutputFormat",
+      "subcategory": "Procedural",
       "componentTypes": [
-        "WORKFLOW"
+        "DIRECTIVE",
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for step-by-step procedural instructions, ordered task sequences, or 'Follow these steps' patterns.",
       "placeholderExample": "I would like to achieve {INPUT_DATA}.\nProvide a complete sequence of steps for me.\nFill in any missing steps.\nIdentify any unnecessary steps.",
       "example": "List ordered steps: STEP_1 = Preheat oven, STEP_2 = Mix flour and sugar, STEP_3 = Bake for 30 minutes\nFill in missing steps if necessary.\nIdentify unnecessary steps if present.",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern Recipe\ncategory OUTPUT_CONTROL\n\nvariables {\n    pronoun? : enum = \"I\" | [\"I\", \"You\", \"We\"]\n    goal* : string\n    steps... : list\n    complete? : bool = true\n    missing? : bool = true\n    unnecessary? : bool = false\n}\n\ntemplate ```\n{{pronoun}} would like to achieve {{goal}}.\n{{#complete}}\nProvide a complete sequence of steps.\n{{/complete}}\n{{#missing}}\nFill in any missing steps.\n{{/missing}}\n{{#unnecessary}}\nIdentify any unnecessary steps.\n{{/unnecessary}}\n{{#steps}}\nSteps to consider:\n{{^steps}}\n  - {{.}}\n{{/steps}}\n{{/steps}}```\n",
+      "extensions": [
+        {
+          "name": "Recipe",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "structured_cot",
       "name": "StructuredCoT",
       "description": "Structure reasoning with program-like constructs such as sequencing, branching, and looping.",
       "category": "REASONING",
-      "subcategory": "ChainOfThought",
+      "subcategory": "Chain-of-Thought",
       "componentTypes": [
-        "WORKFLOW"
+        "OUTPUT_FORMAT",
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for explicit reasoning structures: sequencing, IF-THEN branching, FOR-loops, or structured analysis steps.",
       "placeholderExample": "Use structured reasoning constructs:\n- Sequencing: {STEP_1}, {STEP_2}, …\n- Branching: IF {CONDITION} THEN {ACTION}\n- Looping: FOR {ITEM} IN {SET} DO {ACTION}\nEnd with final answer.\n\n{QUESTION}\n{INPUT_DATA}",
       "example": "Sequencing: Initialize sum = 0\nLooping: FOR i=1..10 IF i is even THEN sum += i\nEnd with final answer.",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern StructuredCoT\ncategory REASONING\n\nvariables {\n    question* : string\n    input_data? : string\n    steps... : list\n    condition? : string\n    action? : string\n    item? : string\n    set_name? : string\n}\n\ntemplate ```\nUse structured reasoning constructs:\n{{#steps}}\n- Sequencing:\n{{^steps}}\n  - {{.}}\n{{/steps}}\n{{/steps}}\n{{#condition}}\n- Branching: IF {{condition}} THEN {{action}}\n{{/condition}}\n{{#item}}\n- Looping: FOR {{item}} IN {{set_name}} DO {{action}}\n{{/item}}\nEnd with final answer.\n\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Structured CoT (SCoT) Prompting",
+          "source": "sahoo2024"
+        },
+        {
+          "name": "Structured Chain-of-Thought (SCoT)",
+          "source": "vatsal2024"
+        }
+      ]
     },
     {
       "id": "complex_cot",
       "name": "ComplexCoT",
-      "description": "During decoding, selects answers from the most complex reasoning chains.",
+      "description": "Generate multiple reasoning chains and prefer answers supported by the most complex and detailed chains.",
       "category": "REASONING",
-      "subcategory": "ChainOfThought",
+      "subcategory": "Chain-of-Thought",
       "componentTypes": [
-        "WORKFLOW"
+        "PROCEDURAL_STEPS"
       ],
-      "detectionInstruction": "Look for multiple reasoning paths with comparison and consistency-based selection.",
-      "placeholderExample": "Generate multiple reasoning paths: {PATH_1}, {PATH_2}, …\n\nCompare results across paths.\n\nSelect the most consistent final answer.\n\n{QUESTION}\n{INPUT_DATA}",
-      "example": "Solve the following problem step by step. Generate multiple possible reasoning paths.\nCompare the answers and select the most consistent final answer.\n\nSolve the following math problem:\nA shop had 50 pens. They sold 18 on Monday and 12 on Tuesday. How many pens remain?",
-      "notes": null
+      "detectionInstruction": "Look for instructions to generate multiple reasoning chains and select or prioritize answers from the most complex, detailed, or elaborate reasoning paths, as distinct from plain majority or consistency voting.",
+      "placeholderExample": "Generate {PATH_COUNT} detailed reasoning paths for the following question.\nPrioritize the most complex and detailed paths, then use their majority answer as the final answer.\n\n{QUESTION}\n{INPUT_DATA}",
+      "example": "Solve the following problem step by step. Generate multiple reasoning paths, making each as detailed as possible.\nAmong the most complex and detailed paths, take the majority answer as the final answer.\n\nSolve the following math problem:\n\n{QUESTION}\n{INPUT_DATA}",
+      "notes": null,
+      "formalization": "pattern ComplexCoT\ncategory REASONING\n\nvariables {\n    question* : string\n    input_data? : string\n    path_count? : int = 3\n}\n\ntemplate ```\nGenerate {{path_count}} reasoning paths, each as detailed as possible.\nAmong the most complex and detailed paths, take the majority answer as the final answer.\n\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Complexity-Based Prompting",
+          "source": "schulhoff2024"
+        },
+        {
+          "name": "Complex CoT",
+          "source": "vatsal2024"
+        }
+      ]
     },
     {
       "id": "plan_and_solve",
       "name": "PlanAndSolve",
       "description": "First plan sub-problems, then solve them step by step.",
       "category": "REASONING",
-      "subcategory": "PlanAndSolve",
+      "subcategory": "Planning",
       "componentTypes": [
-        "WORKFLOW"
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for explicit planning steps followed by sequential execution.",
       "placeholderExample": "Step 1: Generate a high-level plan of solution steps: {PLAN}\nStep 2: Execute each step in order.\nStep 3: Produce final answer.\n\n{QUESTION}\n{INPUT_DATA}",
       "example": "First, generate a clear plan outlining the steps needed to solve the problem.\nThen, follow the plan step by step to produce the final answer.\n\nQuestion:\nIf a train travels 120 km in 2 hours, and then 180 km in 3 hours, what is its average speed across the whole trip?",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern PlanAndSolve\ncategory REASONING\n\nvariables {\n    question* : string\n    input_data? : string\n    plan_label? : string = \"PLAN\"\n}\n\ntemplate ```\nStep 1: Generate a high-level plan of solution steps: {{plan_label}}\nStep 2: Execute each step in order.\nStep 3: Produce final answer.\n\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Plan-and-Solve Prompting",
+          "source": "schulhoff2024"
+        },
+        {
+          "name": "Plan-and-Solve (PS)",
+          "source": "vatsal2024"
+        }
+      ]
     },
     {
       "id": "least_to_most",
       "name": "LeastToMost",
       "description": "Decompose into easiest sub-problems first, then harder ones.",
       "category": "REASONING",
-      "subcategory": "LeastToMost",
+      "subcategory": "Decomposition",
       "componentTypes": [
-        "WORKFLOW"
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for hierarchical decomposition from simple to complex subproblems.",
       "placeholderExample": "{QUESTION}\n{INPUT_DATA}\n\nDecompose problem into simpler subproblems: {SUBPROBLEM_1}, {SUBPROBLEM_2}, …\n\nSolve each subproblem in sequence.\n\nCombine subproblem solutions into final answer.",
       "example": "Solve the following problem step by step. First, decompose the problem into smaller subproblems.\nThen, solve each subproblem in sequence.\nFinally, combine the solutions to produce the final answer.\n\nQuestion:\nA school cafeteria has 312 apples. They want to distribute them equally to 24 students. Each student eats 2 apples, and the rest are saved. How many apples are saved?",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern LeastToMost\ncategory REASONING\n\nvariables {\n    question* : string\n    input_data? : string\n    subproblems... : list\n}\n\ntemplate ```\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n\nDecompose problem into simpler subproblems:\n{{^subproblems}}\n  - {{.}}\n{{/subproblems}}\n\nSolve each subproblem in sequence.\n\nCombine subproblem solutions into final answer.\n```\n",
+      "extensions": [
+        {
+          "name": "Least-to-Most Prompting",
+          "source": "schulhoff2024"
+        },
+        {
+          "name": "Least-to-Most",
+          "source": "vatsal2024"
+        }
+      ]
     },
     {
       "id": "reverse_cot",
       "name": "ReverseCoT",
       "description": "Generate reasoning steps after giving the answer, to simulate justification.",
       "category": "REASONING",
-      "subcategory": "ChainOfThought",
+      "subcategory": "Chain-of-Thought",
       "componentTypes": [
-        "WORKFLOW"
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for answer-first patterns followed by retroactive reasoning justification.",
       "placeholderExample": "{QUESTION}\n{INPUT_DATA}\n\nFirst, output the final answer only.\nThen, generate the reasoning steps that justify the answer.",
       "example": "Please answer the question.\nFirst, state the final answer directly.\nThen, explain the reasoning that justifies your answer.\n “The answer is 57. Reasoning: Because 23+47…”",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern ReverseCoT\ncategory REASONING\n\nvariables {\n    question* : string\n    input_data? : string\n}\n\ntemplate ```\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n\nFirst, output the final answer only.\nThen, generate the reasoning steps that justify the answer.\n```\n",
+      "extensions": [
+        {
+          "name": "Reversing Chain-of-Thought (RCoT)",
+          "source": "schulhoff2024"
+        }
+      ]
     },
     {
       "id": "self_verification",
@@ -182,26 +327,41 @@
       "subcategory": "Verification",
       "componentTypes": [
         "CONSTRAINTS",
-        "WORKFLOW"
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for 'Validate', 'Check', 'Verify', 'ensure', or self-checking requirements.",
       "placeholderExample": "Step 1: Generate an initial answer: {ANSWER_1}\n\nStep 2: Verify whether {ANSWER_1} satisfies constraints: {CONSTRAINTS}\n\nStep 3: If verification fails, explain issue and correct.\n\nFinal Answer = {VERIFIED_ANSWER}\n\n{{QUESTION}\n{INPUT_DATA}",
       "example": "Step 1: Generate an initial answer.\nStep 2: Verify whether the answer satisfies the requirements.\nStep 3: If verification fails, explain the issues.\nFinal Answer: {final answer}\n\nQuestion:\nWhat is the capital of Australia?\nFinal Answer: Canberra",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern SelfVerification\ncategory OUTPUT_CONTROL\n\nvariables {\n    question* : string\n    input_data? : string\n    constraints... : list\n}\n\ntemplate ```\nStep 1: Generate an initial answer.\n\nStep 2: Verify whether the answer satisfies constraints:\n{{^constraints}}\n  - {{.}}\n{{/constraints}}\n\nStep 3: If verification fails, explain issue and correct.\n\nFinal Answer = verified answer\n\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Self-Verification",
+          "source": "schulhoff2024"
+        }
+      ]
     },
     {
       "id": "self_calibration",
       "name": "SelfCalibration",
-      "description": "Model adjusts confidence in its answer or re-calibrates if uncertain.",
+      "description": "After answering, the model estimates its confidence that the answer is correct and revises or abstains when that confidence is low.",
       "category": "OUTPUT_CONTROL",
       "subcategory": "Verification",
       "componentTypes": [
-        "CONSTRAINTS"
+        "CONSTRAINTS",
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for confidence evaluation, multiple reasoning paths with confidence scoring, or recalibration steps.",
-      "placeholderExample": "Generate multiple reasoning paths: {PATH_1}, {PATH_2}, …\n\nEvaluate confidence of each path: {CONFIDENCE_1}, {CONFIDENCE_2}, …\n\nAdjust or recalibrate answer based on confidence distribution.\n\nFinal Answer = {CALIBRATED_ANSWER}\n\n{QUESTION}\n{INPUT_DATA}",
-      "example": "Generate multiple independent reasoning paths.\nCompare the results and select the most consistent final answer.\n\nQuestion:\nWhat is 27 + 36?",
-      "notes": null
+      "placeholderExample": "Answer the question: {QUESTION}\nThen state your confidence (0–100%) that the answer is correct, with a brief justification.\nIf confidence is below {THRESHOLD}, revise or abstain.",
+      "example": "Answer the question. Then state your confidence from 0–100% that the answer is correct, with a one-line justification. If your confidence is below 60%, revise your answer or say you are not sure.\n\nQuestion: What is the boiling point of water at the summit of Mount Everest?",
+      "notes": null,
+      "formalization": "pattern SelfCalibration\ncategory OUTPUT_CONTROL\n\nvariables {\n    question* : string\n    threshold? : int = 60\n}\n\ntrigger AFTER_ANSWER\n\ntemplate ```\nAnswer the question: {{question}}\nThen state your confidence (0-100%) that the answer is correct, with a brief justification.\nIf confidence is below {{threshold}}, revise or abstain.\n```\n",
+      "extensions": [
+        {
+          "name": "Self-Calibration",
+          "source": "schulhoff2024"
+        }
+      ]
     },
     {
       "id": "fact_check_list",
@@ -210,12 +370,20 @@
       "category": "OUTPUT_CONTROL",
       "subcategory": "Verification",
       "componentTypes": [
-        "CONSTRAINTS"
+        "CONSTRAINTS",
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for fact-extraction checklists, factual verification requirements, or accuracy checks.",
       "placeholderExample": "Extract facts from output: {FACT_1}, {FACT_2}, …\n\nInsert fact list at {OUTPUT_LOCATION}\n\nEnsure facts are fundamental to correctness.\n\n{QUESTION}\n{INPUT_DATA}",
       "example": "Extract facts from output: {Capital of Australia = Canberra}\n\nInsert fact list at end of answer\n\nEnsure facts are fundamental to correctness.",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern FactCheckList\ncategory OUTPUT_CONTROL\n\nvariables {\n    question* : string\n    input_data? : string\n    facts... : list\n    output_location? : string = \"end of answer\"\n}\n\ntemplate ```\nExtract facts from output:\n{{^facts}}\n  - {{.}}\n{{/facts}}\n\nInsert fact list at {{output_location}}.\n\nEnsure facts are fundamental to correctness.\n\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Fact Check List",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "reflection",
@@ -224,40 +392,67 @@
       "category": "OUTPUT_CONTROL",
       "subcategory": "Verification",
       "componentTypes": [
-        "WORKFLOW"
+        "CONSTRAINTS",
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for 'reflect', 'critique', 'revise', 'improve your answer', or multi-step revision.",
       "placeholderExample": "Step 1: Generate initial answer: {ANSWER_1}\nStep 2: Critique reasoning and assumptions in {ANSWER_1}\nStep 3: Revise output based on critique.\nFinal Answer = {ANSWER_REVISED}\n\n\n{QUESTION}\n{INPUT_DATA}",
       "example": "Whenever you generate an answer\nExplain the reasoning and assumptions behind your\nanswer\n(Optional) ...so that I can improve my question",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern Reflection\ncategory OUTPUT_CONTROL\n\nvariables {\n    trigger? : enum = \"AFTER_ANSWER\" | [\"ALWAYS\", \"AFTER_ANSWER\"]\n    explain? : bool = true             \"Explain reasoning\"\n    assumptions? : bool = true         \"State assumptions\"\n    improvements? : bool = false       \"Suggest improvements\"\n}\n\ntrigger AFTER_ANSWER\n\ntemplate ```\n{{#trigger}}\nAfter generating your answer:\n{{/trigger}}\n{{#explain}}\nExplain the reasoning behind your answer.\n{{/explain}}\n{{#assumptions}}\nState any assumptions you made.\n{{/assumptions}}\n{{#improvements}}\nSuggest potential improvements.\n{{/improvements}}\n```\n",
+      "extensions": [
+        {
+          "name": "Self-reflection Prompting",
+          "source": "fagbohun2024"
+        },
+        {
+          "name": "Reflection",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "output_automater",
       "name": "OutputAutomater",
-      "description": "Captures instructions that constrain the LLM response into a machine-readable, directly reusable, or output-only format, such as JSON, tables, lists, or explicitly formatted sections.",
+      "description": "The model outputs an executable artifact (typically a script) that automates the steps it recommends, instead of only describing them.",
       "category": "OUTPUT_CONTROL",
-      "subcategory": "OutputFormat",
+      "subcategory": "Output formatting",
       "componentTypes": [
         "OUTPUT_FORMAT"
       ],
-      "detectionInstruction": "Look for output-format constraints that demand a specific machine-readable or directly reusable format: 'Return JSON', 'Output only', 'return a table', 'no prose', 'respond with a list'. Distinct from SchemaSpecs, which specifies the fields or structural schema of the output.",
-      "placeholderExample": "Return only {OUTPUT_FORMAT}.\nInclude these fields or columns: {FIELD_1}, {FIELD_2}, {FIELD_3}.\nDo not include explanatory prose outside the formatted output.\n\n{QUESTION}\n{INPUT_DATA}",
-      "example": "Return only JSON with the keys \"task\", \"priority\", and \"owner\".\nDo not include markdown fences or explanatory prose.\n\nSummarize this request as a task record:\nPlease have Maya review the launch checklist by Friday. It is high priority.",
-      "notes": null
+      "detectionInstruction": "Look for instructions to produce a runnable script, executable artifact, or directly copyable automation that performs the recommended steps, rather than only describing the steps.",
+      "placeholderExample": "Whenever your output contains at least one manual step, generate an executable {LANGUAGE} script that automates those steps.\n\nTask: {TASK}",
+      "example": "Whenever your response includes steps a user would otherwise carry out by hand, also output a runnable Bash script that performs those steps automatically.\n\nTask: set up a Python virtual environment and install the project's dependencies.",
+      "notes": null,
+      "formalization": "pattern OutputAutomater\ncategory OUTPUT_CONTROL\n\nvariables {\n    language* : string\n    task* : string\n}\n\ntemplate ```\nWhenever your output contains at least one manual step, generate an executable {{language}} script that automates those steps.\n\nTask: {{task}}\n```\n",
+      "extensions": [
+        {
+          "name": "Output Automater",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "template",
       "name": "Template",
       "description": "Preserve a provided human-readable prose template or textual layout.",
       "category": "OUTPUT_CONTROL",
-      "subcategory": "OutputFormat",
+      "subcategory": "Output formatting",
       "componentTypes": [
+        "DIRECTIVE",
         "OUTPUT_FORMAT"
       ],
       "detectionInstruction": "Look for reusable response templates, named format skeletons, or 'use this structure' directives.",
       "placeholderExample": "Use template: {TEMPLATE}\n\nInsert content into placeholders: {PLACEHOLDER_1}, {PLACEHOLDER_2}, …\n\nPreserve formatting of template.\n\n{QUESTION}\n{INPUT_DATA}",
       "example": "Use this template for every response:\n\nTitle: {TITLE}\nSummary: {SUMMARY}\nNext Steps:\n1. {STEP_ONE}\n2. {STEP_TWO}\n\nFill the placeholders for a project status update about migrating a documentation site. Preserve the labels, numbering, and line breaks.",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern Template\ncategory OUTPUT_CONTROL\n\nvariables {\n    template* : string\n    placeholders... : list\n    question* : string\n    input_data? : string\n}\n\ntemplate ```\nUse template: {{template}}\n\nInsert content into placeholders:\n{{^placeholders}}\n  - {{.}}\n{{/placeholders}}\n\nPreserve formatting of template.\n\n{{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Template",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "flipped_interaction",
@@ -266,13 +461,23 @@
       "category": "META_DIRECTIVES",
       "subcategory": "Interaction",
       "componentTypes": [
-        "DIRECTIVE",
-        "WORKFLOW"
+        "DIRECTIVE"
       ],
       "detectionInstruction": "Look for role-reversal where the model generates questions for the user.",
       "placeholderExample": "Instead of answering directly:\nGenerate subquestions to ask user: {Q1}, {Q2}, …\n\nStop when {GOAL_CONDITION} is satisfied.\n\n{QUESTION}",
       "example": "I would like you to ask me questions to achieve X\nYou should ask questions until this condition is met or\nto achieve this goal (alternatively, forever)\n(Optional) ask me the questions one at a time, two at\na time, etc.",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern FlippedInteraction\ncategory META_DIRECTIVES\n\nvariables {\n    question* : string\n    goal_condition? : string\n    question_count? : int = 1\n}\n\ntemplate ```\nInstead of answering directly:\nGenerate {{question_count}} subquestions to ask the user.\n{{#goal_condition}}\n\nStop when {{goal_condition}} is satisfied.\n{{/goal_condition}}\n\n{{question}}\n```\n",
+      "extensions": [
+        {
+          "name": "Flipped Interaction Prompting",
+          "source": "fagbohun2024"
+        },
+        {
+          "name": "Flipped Interaction",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "game_play",
@@ -281,13 +486,19 @@
       "category": "META_DIRECTIVES",
       "subcategory": "Interaction",
       "componentTypes": [
-        "DIRECTIVE",
-        "CONSTRAINTS"
+        "DIRECTIVE"
       ],
       "detectionInstruction": "Look for game framing, rule definitions, or interactive engagement structures.",
       "placeholderExample": "Frame task as a game: {GAME_NAME}\n\nDefine rules: {RULE_1}, {RULE_2}, …\n\nInteraction must proceed according to rules.\n\n{QUESTION}",
       "example": "Create a game around practicing French vocabulary.\nThe game must define one or more fundamental rules.\nThe rules should constrain how the user can respond.\nThe interaction must proceed according to the defined rules.",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern GamePlay\ncategory META_DIRECTIVES\n\nvariables {\n    game_name* : string\n    rules+ : list\n    question* : string\n}\n\ntemplate ```\nFrame task as a game: {{game_name}}\n\nDefine rules:\n{{^rules}}\n  - {{.}}\n{{/rules}}\n\nInteraction must proceed according to rules.\n\n{{question}}\n```\n",
+      "extensions": [
+        {
+          "name": "Game Play",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "infinite_generation",
@@ -296,27 +507,40 @@
       "category": "META_DIRECTIVES",
       "subcategory": "Interaction",
       "componentTypes": [
-        "DIRECTIVE",
-        "WORKFLOW"
+        "DIRECTIVE"
       ],
       "detectionInstruction": "Look for continuous generation instructions, batch output, or 'keep going' patterns.",
       "placeholderExample": "Continuously generate {OUTPUT_TYPE}\n\nBatch size = {N} outputs per turn\n\nStop when {STOP_CONDITION}\n\n{QUESTION}",
       "example": "I would like you to generate a name\nand job forever. I am going to provide a\ntemplate for your output. Everything in all caps is a\nplaceholder. Any time that you generate text, try to\nfit it into one of the placeholders that I list. Please\npreserve the formatting and overall template that I\nprovide: https://myapi.com/NAME/profile/JOB",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern InfiniteGeneration\ncategory META_DIRECTIVES\n\nvariables {\n    output_type* : string\n    batch_size? : int = 1\n    stop_condition? : string\n    question* : string\n}\n\ntemplate ```\nContinuously generate {{output_type}}\n\nBatch size = {{batch_size}} outputs per turn\n{{#stop_condition}}\n\nStop when {{stop_condition}}\n{{/stop_condition}}\n\n{{question}}\n```\n",
+      "extensions": [
+        {
+          "name": "Infinite Generation",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "schema_specs",
       "name": "SchemaSpecs",
       "description": "Define an explicit schema or required fields that the model output must follow.",
       "category": "OUTPUT_CONTROL",
-      "subcategory": "SchemaSpecs",
+      "subcategory": "Schema specification",
       "componentTypes": [
         "OUTPUT_FORMAT"
       ],
       "detectionInstruction": "Look for JSON schema declarations, field requirements, type specifications, or structural output requirements.",
       "placeholderExample": "Force output into schema: {SCHEMA}\n\nPopulate schema fields: {FIELD_1}, {FIELD_2}, …\n\n{QUESTION}",
       "example": "Output must follow schema: {Title:…, Author:…, Year:…}”",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern SchemaSpecs\ncategory OUTPUT_CONTROL\n\nvariables {\n    schema* : string\n    fields... : list\n    question* : string\n}\n\ntemplate ```\nForce output into schema: {{schema}}\n{{#fields}}\n\nPopulate schema fields:\n{{^fields}}\n  - {{.}}\n{{/fields}}\n{{/fields}}\n\n{{question}}\n```\n",
+      "extensions": [
+        {
+          "name": "Output Formatting / Answer Shape & Space (vocabulary terms)",
+          "source": "schulhoff2024"
+        }
+      ]
     },
     {
       "id": "question_refinement",
@@ -330,21 +554,40 @@
       "detectionInstruction": "Look for query reformulation, refinement suggestions, or 'suggest a better version'.",
       "placeholderExample": "Take input query: {RAW_QUESTION}\n\nSuggest a refined version: {REFINED_QUESTION}\n\n(Optional) Ask user to confirm refinement.\n\n{QUESTION}",
       "example": "Within scope of cybersecurity and security risks, suggest a better version of the question\nto use instead\n(Optional) prompt me if I would like to use the better\nversion instead\n\nHow to use Windows?",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern QuestionRefinement\ncategory META_DIRECTIVES\n\nvariables {\n    raw_question* : string\n    ask_confirmation? : bool = true\n}\n\ntemplate ```\nTake input query: {{raw_question}}\n\nSuggest a refined version.\n{{#ask_confirmation}}\n\nAsk user to confirm refinement.\n{{/ask_confirmation}}\n```\n",
+      "extensions": [
+        {
+          "name": "Question Refinement",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "rar",
       "name": "RAR",
-      "description": "Retrieve info, answer, then refine with self-edit.",
+      "description": "In one prompt, the model first rephrases and expands the question, then answers the rephrased version.",
       "category": "META_DIRECTIVES",
       "subcategory": "Refinement",
       "componentTypes": [
-        "WORKFLOW"
+        "DIRECTIVE",
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for retrieve-answer-refine workflows or iterative self-editing.",
-      "placeholderExample": "Step 1: Retrieve relevant context: {CONTEXT}\nStep 2: Generate answer from {CONTEXT}\nStep 3: Refine answer for clarity/completeness\n\n{QUESTION}",
-      "example": "“Step 1: Retrieve passage. Step 2: Answer. Step 3: Refine answer.”",
-      "notes": null
+      "placeholderExample": "Rephrase and expand the following question, then answer your rephrased version.\n\nQuestion: {QUESTION}",
+      "example": "Rephrase and expand the question below, then answer the expanded version.\n\nQuestion: Was Ada Lovelace born before the telephone was invented?",
+      "notes": null,
+      "formalization": "pattern RAR\ncategory META_DIRECTIVES\n\nvariables {\n    question* : string\n}\n\ntemplate ```\nRephrase and expand the following question, then answer your rephrased version.\n\nQuestion: {{question}}\n```\n",
+      "extensions": [
+        {
+          "name": "Rephrase and Respond (RaR) Prompting",
+          "source": "sahoo2024"
+        },
+        {
+          "name": "Rephrase and Respond (RaR)",
+          "source": "schulhoff2024"
+        }
+      ]
     },
     {
       "id": "alternative_approaches",
@@ -353,26 +596,41 @@
       "category": "META_DIRECTIVES",
       "subcategory": "Enhancement",
       "componentTypes": [
-        "WORKFLOW"
+        "DIRECTIVE",
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for requests for multiple approaches, alternative solutions, or pros/cons comparisons.",
       "placeholderExample": "Given input task: {TASK}\n\nList alternative approaches: {APPROACH_1}, {APPROACH_2}, …\n\n(Optional) Compare pros/cons of each.\n\n{QUESTION}",
       "example": "Within scope X, if there are alternative ways to accom-\nplish the same thing, list the best alternate approaches\n(Optional) compare/contrast the pros and cons of each\napproach\n(Optional) include the original way that I asked\n(Optional) prompt me for which approach I would like\nto use",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern AlternativeApproaches\ncategory META_DIRECTIVES\n\nvariables {\n    task* : string\n    approach_count? : int = 3\n    compare? : bool = true\n    question? : string\n}\n\ntemplate ```\nGiven input task: {{task}}\n\nList {{approach_count}} alternative approaches.\n{{#compare}}\n\nCompare pros and cons of each.\n{{/compare}}\n{{#question}}\n\n{{question}}\n{{/question}}\n```\n",
+      "extensions": [
+        {
+          "name": "Alternative Approaches",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "re2",
       "name": "RE2",
-      "description": "Force output into reasoning, evidence, explanation structure.",
+      "description": "Re-reading: instruct the model to read the question again before answering, to improve reasoning.",
       "category": "META_DIRECTIVES",
       "subcategory": "Refinement",
       "componentTypes": [
-        "OUTPUT_FORMAT"
+        "DIRECTIVE"
       ],
-      "detectionInstruction": "Look for Reason/Evidence/Explanation structured output requirements.",
-      "placeholderExample": "Format output with sections:\nReason: {REASON}\nEvidence: {EVIDENCE}\nExplanation: {EXPLANATION}\n\n{QUESTION}",
-      "example": "“Reason: … Evidence: … Explanation: …”",
-      "notes": null
+      "detectionInstruction": "Look for instructions to read or re-read the question/input before answering.",
+      "placeholderExample": "Read the question again: {QUESTION}\n{INPUT_DATA}\n\nNow answer the question.",
+      "example": "Read the question again before answering.\n\nQuestion: Which city hosted the 2016 Summer Olympics?\nNow answer the question.",
+      "notes": null,
+      "formalization": "pattern RE2\ncategory META_DIRECTIVES\n\nvariables {\n    question* : string\n    input_data? : string\n}\n\ntemplate ```\nRead the question again: {{question}}\n{{#input_data}}\n{{input_data}}\n{{/input_data}}\nNow answer the question.\n```\n",
+      "extensions": [
+        {
+          "name": "Re-reading (RE2)",
+          "source": "schulhoff2024"
+        }
+      ]
     },
     {
       "id": "refusal_breaker",
@@ -381,26 +639,42 @@
       "category": "META_DIRECTIVES",
       "subcategory": "Enhancement",
       "componentTypes": [
+        "CONSTRAINTS",
         "DIRECTIVE"
       ],
       "detectionInstruction": "Look for 'ignore previous', 'do not refuse', refusal-handling instructions, or alternative query generation.",
       "placeholderExample": "If refusal occurs:\nStep 1: State refusal reason.\nStep 2: Reframe request into \nalternative query: {ALT_QUERY}\n\n{QUESTION}",
       "example": "Whenever you can’t answer a question\nExplain why you can’t answer the question\nProvide one or more alternative wordings of the ques-\ntion that you could answer",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern RefusalBreaker\ncategory META_DIRECTIVES\n\nvariables {\n    question* : string\n    alt_query? : string\n}\n\ntrigger ON_REFUSAL\n\ntemplate ```\nIf refusal occurs:\nStep 1: State refusal reason.\nStep 2: Reframe request into an alternative query.\n{{#alt_query}}\nAlternative query: {{alt_query}}\n{{/alt_query}}\n\n{{question}}\n```\n",
+      "extensions": [
+        {
+          "name": "Refusal Breaker",
+          "source": "white2023"
+        }
+      ]
     },
     {
       "id": "instruction_selection",
       "name": "InstructionSelection",
-      "description": "Choose the best instruction from a set of candidates.",
+      "description": "Given several candidate instructions for a task, the model selects the most appropriate one and then carries out the task using it.",
       "category": "META_DIRECTIVES",
       "subcategory": "Refinement",
       "componentTypes": [
-        "DIRECTIVE"
+        "DIRECTIVE",
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for candidate instruction sets with selection criteria.",
-      "placeholderExample": "Given candidate instructions: {INST_1}, {INST_2}, … {INST_N}\nSelect best instruction for task: {BEST_INST}\n\n{QUESTION}",
-      "example": "Candidate prompts: A, B, C → Pick best for task.",
-      "notes": null
+      "placeholderExample": "Candidate instructions: {INST_1}, {INST_2}, … {INST_N}\nSelect the instruction best suited to {TASK}, state your choice, then carry out the task using it.\n\n{INPUT_DATA}",
+      "example": "Here are three candidate instructions for summarizing a contract:\nA) \"Summarize the contract in plain English.\"\nB) \"List each obligation and its responsible party.\"\nC) \"Extract key dates, amounts, and termination clauses.\"\nChoose the one best suited to a compliance review, state your choice, then apply it to the contract below.\n\nContract: {CONTRACT}",
+      "notes": null,
+      "formalization": "pattern InstructionSelection\ncategory META_DIRECTIVES\n\nvariables {\n    instructions+ : list\n    task* : string\n    input_data* : string\n}\n\ntemplate ```\nCandidate instructions:\n{{^instructions}}\n  - {{.}}\n{{/instructions}}\nSelect the instruction best suited to {{task}}, state your choice, then carry out the task using it.\n\n{{input_data}}\n```\n",
+      "extensions": [
+        {
+          "name": "Instruction Selection",
+          "source": "schulhoff2024"
+        }
+      ]
     },
     {
       "id": "cognitive_verifier",
@@ -409,12 +683,20 @@
       "category": "META_DIRECTIVES",
       "subcategory": "Enhancement",
       "componentTypes": [
-        "WORKFLOW"
+        "DIRECTIVE",
+        "PROCEDURAL_STEPS"
       ],
       "detectionInstruction": "Look for sub-question generation for verification, decomposition for accuracy.",
       "placeholderExample": "Given input question: {QUESTION}\n\nGenerate subquestions: {Q1}, {Q2}, …\n\nAnswer each subquestion.\nCombine subanswers into final answer.",
       "example": "When you are asked a question, follow these rules\nGenerate a number of additional questions that would\nhelp more accurately answer the question\nCombine the answers to the individual questions to\nproduce the final answer to the overall question",
-      "notes": null
+      "notes": null,
+      "formalization": "pattern CognitiveVerifier\ncategory META_DIRECTIVES\n\nvariables {\n    question* : string\n    subquestion_count? : int = 3\n}\n\ntemplate ```\nGiven input question: {{question}}\n\nGenerate {{subquestion_count}} subquestions.\n\nAnswer each subquestion.\nCombine subanswers into final answer.\n```\n",
+      "extensions": [
+        {
+          "name": "Cognitive Verifier",
+          "source": "white2023"
+        }
+      ]
     }
   ]
 }

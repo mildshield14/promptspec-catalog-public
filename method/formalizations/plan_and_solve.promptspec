@@ -1,0 +1,19 @@
+pattern PlanAndSolve
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+    plan_label? : string = "PLAN"
+}
+
+template ```
+Step 1: Generate a high-level plan of solution steps: {{plan_label}}
+Step 2: Execute each step in order.
+Step 3: Produce final answer.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```

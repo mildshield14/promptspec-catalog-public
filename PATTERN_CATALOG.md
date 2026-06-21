@@ -1,46 +1,47 @@
 # PromptSpec Pattern Catalog
 
-> **Read this if you just want the taxonomy.** This is the MD view of the catalog. The machine-readable source of truth is [`catalog/patterns.json`](catalog/patterns.json) — if the two ever disagree, the JSON wins.
+> **Read this if you just want the taxonomy.** This is the MD view of the catalog. The method CSV is the source of truth; [`catalog/patterns.json`](catalog/patterns.json) is the generated machine-readable view.
 
 The catalog contains **29 prompt-engineering patterns** across **5 categories**.
 
 All patterns in this catalog are derived from published prompt-engineering literature. They are taxonomy entries, not empirically observed corpus findings.
 
-Each pattern lists the **prompt component type(s)** it relates to in the PromptSpec model (`PROFILE_ROLE`, `DIRECTIVE`, `CONTEXT`, `WORKFLOW`, `EXAMPLES`, `OUTPUT_FORMAT`, `CONSTRAINTS`). The binding *semantics* (whether a pattern is primary in, modifies, or spans those components) are defined in the associated publication, not in this catalog.
+Each pattern lists the **prompt component type(s)** it relates to in the PromptSpec model (`PROFILE_ROLE`, `DIRECTIVE`, `CONTEXT`, `PROCEDURAL_STEPS`, `EXAMPLES`, `OUTPUT_FORMAT`, `CONSTRAINTS`). The binding *semantics* (whether a pattern is primary in, modifies, or spans those components) are defined in the associated publication, not in this catalog.
 
 ## Summary
 
 | Pattern | Category | Component(s) |
 |---|---|---|
-| FewShot | In-Context Learning | `EXAMPLES` |
+| FewShot | In-Context Learning | `DIRECTIVE`, `EXAMPLES` |
 | ZeroShot | In-Context Learning | `DIRECTIVE` |
-| ChainOfThought | Reasoning | `WORKFLOW` |
-| ComplexCoT | Reasoning | `WORKFLOW` |
-| LeastToMost | Reasoning | `WORKFLOW` |
-| PlanAndSolve | Reasoning | `WORKFLOW` |
-| ReverseCoT | Reasoning | `WORKFLOW` |
-| StructuredCoT | Reasoning | `WORKFLOW` |
-| FactCheckList | Output Control | `CONSTRAINTS` |
+| ChainOfThought | Reasoning | `PROCEDURAL_STEPS` |
+| ComplexCoT | Reasoning | `PROCEDURAL_STEPS` |
+| LeastToMost | Reasoning | `PROCEDURAL_STEPS` |
+| PlanAndSolve | Reasoning | `PROCEDURAL_STEPS` |
+| ReverseCoT | Reasoning | `PROCEDURAL_STEPS` |
+| StructuredCoT | Reasoning | `OUTPUT_FORMAT`, `PROCEDURAL_STEPS` |
+| FactCheckList | Output Control | `CONSTRAINTS`, `PROCEDURAL_STEPS` |
 | OutputAutomater | Output Control | `OUTPUT_FORMAT` |
-| Persona | Output Control | `PROFILE_ROLE` |
-| Recipe | Output Control | `WORKFLOW` |
-| Reflection | Output Control | `WORKFLOW` |
+| Recipe | Output Control | `DIRECTIVE`, `PROCEDURAL_STEPS` |
+| Reflection | Output Control | `CONSTRAINTS`, `PROCEDURAL_STEPS` |
 | SchemaSpecs | Output Control | `OUTPUT_FORMAT` |
-| SelfCalibration | Output Control | `CONSTRAINTS` |
-| SelfVerification | Output Control | `CONSTRAINTS`, `WORKFLOW` | 
-| Template | Output Control | `OUTPUT_FORMAT` |
+| SelfCalibration | Output Control | `CONSTRAINTS`, `PROCEDURAL_STEPS` |
+| SelfVerification | Output Control | `CONSTRAINTS`, `PROCEDURAL_STEPS` |
+| Template | Output Control | `DIRECTIVE`, `OUTPUT_FORMAT` |
 | VisualizationGenerator | Output Control | `OUTPUT_FORMAT` |
-| ContextManager | Context Control | `CONTEXT`, `DIRECTIVE`, `WORKFLOW` |
-| AlternativeApproaches | Meta-Directives | `WORKFLOW` |
-| CognitiveVerifier | Meta-Directives | `WORKFLOW` |
-| FlippedInteraction | Meta-Directives | `DIRECTIVE`, `WORKFLOW` |
-| GamePlay | Meta-Directives | `DIRECTIVE`, `CONSTRAINTS` |
-| InfiniteGeneration | Meta-Directives | `DIRECTIVE`, `WORKFLOW` |
-| InstructionSelection | Meta-Directives | `DIRECTIVE` |
+| ContextManager | Context Control | `CONTEXT`, `DIRECTIVE`, `PROCEDURAL_STEPS` |
+| Persona | Context Control | `CONTEXT`, `OUTPUT_FORMAT`, `PROFILE_ROLE` |
+| AlternativeApproaches | Meta-Directives | `DIRECTIVE`, `PROCEDURAL_STEPS` |
+| CognitiveVerifier | Meta-Directives | `DIRECTIVE`, `PROCEDURAL_STEPS` |
+| FlippedInteraction | Meta-Directives | `DIRECTIVE` |
+| GamePlay | Meta-Directives | `DIRECTIVE` |
+| InfiniteGeneration | Meta-Directives | `DIRECTIVE` |
+| InstructionSelection | Meta-Directives | `DIRECTIVE`, `PROCEDURAL_STEPS` |
 | QuestionRefinement | Meta-Directives | `DIRECTIVE` |
-| RAR | Meta-Directives | `WORKFLOW` |
-| RE2 | Meta-Directives | `OUTPUT_FORMAT` |
-| RefusalBreaker | Meta-Directives | `DIRECTIVE` |
+| RAR | Meta-Directives | `DIRECTIVE`, `PROCEDURAL_STEPS` |
+| RE2 | Meta-Directives | `DIRECTIVE` |
+| RefusalBreaker | Meta-Directives | `CONSTRAINTS`, `DIRECTIVE` |
+
 
 ## In-Context Learning
 
@@ -48,7 +49,7 @@ Each pattern lists the **prompt component type(s)** it relates to in the PromptS
 
 Provide exemplar input-output pairs to guide the model.
 
-**Component(s):** `EXAMPLES`
+**Component(s):** `DIRECTIVE`, `EXAMPLES`
 
 *Placeholder form:*
 
@@ -79,13 +80,39 @@ Now apply to:
 Winter
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern FewShot
+category IN_CONTEXT_LEARNING
+
+variables {
+    task* : string              "Description of the task"
+    examples+ : list            "List of example objects"
+    num_examples? : int = 3     "How many examples to show"
+    selection? : enum = "first" | ["first", "random", "all"]
+}
+
+template ```
+Task: {{task}}
+
+Here are some examples:
+{{^examples num_examples}}
+Input: {{input}}
+Output: {{output}}
+{{/examples}}
+
+Now do the same for:
+```
+~~~
+
 > Mutually exclusive with ZeroShot.
 
 ### ZeroShot
 
 Provide no examples to guide the task; rely on direct instructions plus input data.
 
-**Component(s):** `DIRECTIVE`  
+**Component(s):** `DIRECTIVE`
 
 *Placeholder form:*
 
@@ -102,6 +129,25 @@ Translate the following English word to French.
 Input: Morning
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern ZeroShot
+category IN_CONTEXT_LEARNING
+
+variables {
+    question* : string
+    input_data? : string
+}
+
+template ```
+Instruction: {{question}}
+{{#input_data}}
+Input data: {{input_data}}
+{{/input_data}}
+```
+~~~
+
 > Represents the default prompting strategy when no demonstrations are provided.
 
 
@@ -111,7 +157,7 @@ Input: Morning
 
 Encourage generic step-by-step reasoning before the final answer.
 
-**Component(s):** `WORKFLOW` 
+**Component(s):** `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -132,20 +178,39 @@ Solve the following math problem:
 Roger has 5 apples and gives 2 to Josh and 1 to Jane. How much is left?
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern ChainOfThought
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+    reasoning_cue? : string = "Let's think step by step."
+}
+
+template ```
+{{reasoning_cue}}
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```
+~~~
+
 ### ComplexCoT
 
-During decoding, selects answers from the most complex reasoning chains.
+Generate multiple reasoning chains and prefer answers supported by the most complex and detailed chains.
 
-**Component(s):** `WORKFLOW`  
+**Component(s):** `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
 ```
-Generate multiple reasoning paths: {PATH_1}, {PATH_2}, …
-
-Compare results across paths.
-
-Select the most consistent final answer.
+Generate {PATH_COUNT} detailed reasoning paths for the following question.
+Prioritize the most complex and detailed paths, then use their majority answer as the final answer.
 
 {QUESTION}
 {INPUT_DATA}
@@ -154,18 +219,43 @@ Select the most consistent final answer.
 *Example:*
 
 ```
-Solve the following problem step by step. Generate multiple possible reasoning paths.
-Compare the answers and select the most consistent final answer.
+Solve the following problem step by step. Generate multiple reasoning paths, making each as detailed as possible.
+Among the most complex and detailed paths, take the majority answer as the final answer.
 
 Solve the following math problem:
-A shop had 50 pens. They sold 18 on Monday and 12 on Tuesday. How many pens remain?
+
+{QUESTION}
+{INPUT_DATA}
 ```
+
+*Formalization:*
+
+~~~promptspec
+pattern ComplexCoT
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+    path_count? : int = 3
+}
+
+template ```
+Generate {{path_count}} reasoning paths, each as detailed as possible.
+Among the most complex and detailed paths, take the majority answer as the final answer.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```
+~~~
 
 ### LeastToMost
 
 Decompose into easiest sub-problems first, then harder ones.
 
-**Component(s):** `WORKFLOW`  
+**Component(s):** `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -191,11 +281,40 @@ Question:
 A school cafeteria has 312 apples. They want to distribute them equally to 24 students. Each student eats 2 apples, and the rest are saved. How many apples are saved?
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern LeastToMost
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+    subproblems... : list
+}
+
+template ```
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+
+Decompose problem into simpler subproblems:
+{{^subproblems}}
+  - {{.}}
+{{/subproblems}}
+
+Solve each subproblem in sequence.
+
+Combine subproblem solutions into final answer.
+```
+~~~
+
 ### PlanAndSolve
 
 First plan sub-problems, then solve them step by step.
 
-**Component(s):** `WORKFLOW`  
+**Component(s):** `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -218,11 +337,35 @@ Question:
 If a train travels 120 km in 2 hours, and then 180 km in 3 hours, what is its average speed across the whole trip?
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern PlanAndSolve
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+    plan_label? : string = "PLAN"
+}
+
+template ```
+Step 1: Generate a high-level plan of solution steps: {{plan_label}}
+Step 2: Execute each step in order.
+Step 3: Produce final answer.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```
+~~~
+
 ### ReverseCoT
 
 Generate reasoning steps after giving the answer, to simulate justification.
 
-**Component(s):** `WORKFLOW`  
+**Component(s):** `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -243,11 +386,33 @@ Then, explain the reasoning that justifies your answer.
  “The answer is 57. Reasoning: Because 23+47…”
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern ReverseCoT
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+}
+
+template ```
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+
+First, output the final answer only.
+Then, generate the reasoning steps that justify the answer.
+```
+~~~
+
 ### StructuredCoT
 
 Structure reasoning with program-like constructs such as sequencing, branching, and looping.
 
-**Component(s):** `WORKFLOW`  
+**Component(s):** `OUTPUT_FORMAT`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -270,6 +435,45 @@ Looping: FOR i=1..10 IF i is even THEN sum += i
 End with final answer.
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern StructuredCoT
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+    steps... : list
+    condition? : string
+    action? : string
+    item? : string
+    set_name? : string
+}
+
+template ```
+Use structured reasoning constructs:
+{{#steps}}
+- Sequencing:
+{{^steps}}
+  - {{.}}
+{{/steps}}
+{{/steps}}
+{{#condition}}
+- Branching: IF {{condition}} THEN {{action}}
+{{/condition}}
+{{#item}}
+- Looping: FOR {{item}} IN {{set_name}} DO {{action}}
+{{/item}}
+End with final answer.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```
+~~~
+
 
 ## Output Control
 
@@ -277,7 +481,7 @@ End with final answer.
 
 Use a checklist to confirm factual accuracy of the output.
 
-**Component(s):** `CONSTRAINTS`  
+**Component(s):** `CONSTRAINTS`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -302,64 +506,81 @@ Insert fact list at end of answer
 Ensure facts are fundamental to correctness.
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern FactCheckList
+category OUTPUT_CONTROL
+
+variables {
+    question* : string
+    input_data? : string
+    facts... : list
+    output_location? : string = "end of answer"
+}
+
+template ```
+Extract facts from output:
+{{^facts}}
+  - {{.}}
+{{/facts}}
+
+Insert fact list at {{output_location}}.
+
+Ensure facts are fundamental to correctness.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```
+~~~
+
 ### OutputAutomater
 
-Captures instructions that constrain the LLM response into a machine-readable, directly reusable, or output-only format, such as JSON, tables, lists, or explicitly formatted sections.
+The model outputs an executable artifact (typically a script) that automates the steps it recommends, instead of only describing them.
 
-**Component(s):** `OUTPUT_FORMAT`  
+**Component(s):** `OUTPUT_FORMAT`
 
 *Placeholder form:*
 
 ```
-Return only {OUTPUT_FORMAT}.
-Include these fields or columns: {FIELD_1}, {FIELD_2}, {FIELD_3}.
-Do not include explanatory prose outside the formatted output.
+Whenever your output contains at least one manual step, generate an executable {LANGUAGE} script that automates those steps.
 
-{QUESTION}
-{INPUT_DATA}
+Task: {TASK}
 ```
 
 *Example:*
 
 ```
-Return only JSON with the keys "task", "priority", and "owner".
-Do not include markdown fences or explanatory prose.
+Whenever your response includes steps a user would otherwise carry out by hand, also output a runnable Bash script that performs those steps automatically.
 
-Summarize this request as a task record:
-Please have Maya review the launch checklist by Friday. It is high priority.
+Task: set up a Python virtual environment and install the project's dependencies.
 ```
 
-### Persona
+*Formalization:*
 
-Adopt a role/persona to shape style and voice.
+~~~promptspec
+pattern OutputAutomater
+category OUTPUT_CONTROL
 
-**Component(s):** `PROFILE_ROLE`  
+variables {
+    language* : string
+    task* : string
+}
 
-*Placeholder form:*
+template ```
+Whenever your output contains at least one manual step, generate an executable {{language}} script that automates those steps.
 
+Task: {{task}}
 ```
-Act as {PERSONA}
-Provide outputs that {PERSONA} would create
-
-{QUESTION}
-{INPUT_DATA}
-```
-
-*Example:*
-
-```
-Act as a helpful math tutor.
-Provide outputs that a helpful math tutor would create
-
-Explain how to solve the following equation step by step:
-2x + 5 = 15
-```
+~~~
 
 ### Recipe
 
 Provide a repeatable recipe-style sequence for solving tasks.
 
-**Component(s):** `WORKFLOW`  
+**Component(s):** `DIRECTIVE`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -378,11 +599,45 @@ Fill in missing steps if necessary.
 Identify unnecessary steps if present.
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern Recipe
+category OUTPUT_CONTROL
+
+variables {
+    pronoun? : enum = "I" | ["I", "You", "We"]
+    goal* : string
+    steps... : list
+    complete? : bool = true
+    missing? : bool = true
+    unnecessary? : bool = false
+}
+
+template ```
+{{pronoun}} would like to achieve {{goal}}.
+{{#complete}}
+Provide a complete sequence of steps.
+{{/complete}}
+{{#missing}}
+Fill in any missing steps.
+{{/missing}}
+{{#unnecessary}}
+Identify any unnecessary steps.
+{{/unnecessary}}
+{{#steps}}
+Steps to consider:
+{{^steps}}
+  - {{.}}
+{{/steps}}
+{{/steps}}```
+~~~
+
 ### Reflection
 
 Model reflects on its first output, critiques it, and produces a revised answer.
 
-**Component(s):** `WORKFLOW`  
+**Component(s):** `CONSTRAINTS`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -406,11 +661,42 @@ answer
 (Optional) ...so that I can improve my question
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern Reflection
+category OUTPUT_CONTROL
+
+variables {
+    trigger? : enum = "AFTER_ANSWER" | ["ALWAYS", "AFTER_ANSWER"]
+    explain? : bool = true             "Explain reasoning"
+    assumptions? : bool = true         "State assumptions"
+    improvements? : bool = false       "Suggest improvements"
+}
+
+trigger AFTER_ANSWER
+
+template ```
+{{#trigger}}
+After generating your answer:
+{{/trigger}}
+{{#explain}}
+Explain the reasoning behind your answer.
+{{/explain}}
+{{#assumptions}}
+State any assumptions you made.
+{{/assumptions}}
+{{#improvements}}
+Suggest potential improvements.
+{{/improvements}}
+```
+~~~
+
 ### SchemaSpecs
 
 Define an explicit schema or required fields that the model output must follow.
 
-**Component(s):** `OUTPUT_FORMAT`  
+**Component(s):** `OUTPUT_FORMAT`
 
 *Placeholder form:*
 
@@ -428,42 +714,79 @@ Populate schema fields: {FIELD_1}, {FIELD_2}, …
 Output must follow schema: {Title:…, Author:…, Year:…}”
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern SchemaSpecs
+category OUTPUT_CONTROL
+
+variables {
+    schema* : string
+    fields... : list
+    question* : string
+}
+
+template ```
+Force output into schema: {{schema}}
+{{#fields}}
+
+Populate schema fields:
+{{^fields}}
+  - {{.}}
+{{/fields}}
+{{/fields}}
+
+{{question}}
+```
+~~~
+
 ### SelfCalibration
 
-Model adjusts confidence in its answer or re-calibrates if uncertain.
+After answering, the model estimates its confidence that the answer is correct and revises or abstains when that confidence is low.
 
-**Component(s):** `CONSTRAINTS`  
+**Component(s):** `CONSTRAINTS`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
 ```
-Generate multiple reasoning paths: {PATH_1}, {PATH_2}, …
-
-Evaluate confidence of each path: {CONFIDENCE_1}, {CONFIDENCE_2}, …
-
-Adjust or recalibrate answer based on confidence distribution.
-
-Final Answer = {CALIBRATED_ANSWER}
-
-{QUESTION}
-{INPUT_DATA}
+Answer the question: {QUESTION}
+Then state your confidence (0–100%) that the answer is correct, with a brief justification.
+If confidence is below {THRESHOLD}, revise or abstain.
 ```
 
 *Example:*
 
 ```
-Generate multiple independent reasoning paths.
-Compare the results and select the most consistent final answer.
+Answer the question. Then state your confidence from 0–100% that the answer is correct, with a one-line justification. If your confidence is below 60%, revise your answer or say you are not sure.
 
-Question:
-What is 27 + 36?
+Question: What is the boiling point of water at the summit of Mount Everest?
 ```
+
+*Formalization:*
+
+~~~promptspec
+pattern SelfCalibration
+category OUTPUT_CONTROL
+
+variables {
+    question* : string
+    threshold? : int = 60
+}
+
+trigger AFTER_ANSWER
+
+template ```
+Answer the question: {{question}}
+Then state your confidence (0-100%) that the answer is correct, with a brief justification.
+If confidence is below {{threshold}}, revise or abstain.
+```
+~~~
 
 ### SelfVerification
 
 Ask the model to verify its own answer against explicit constraints before finalizing.
 
-**Component(s):** `CONSTRAINTS`, `WORKFLOW`  
+**Component(s):** `CONSTRAINTS`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -476,7 +799,7 @@ Step 3: If verification fails, explain issue and correct.
 
 Final Answer = {VERIFIED_ANSWER}
 
-{QUESTION}
+{{QUESTION}
 {INPUT_DATA}
 ```
 
@@ -493,11 +816,42 @@ What is the capital of Australia?
 Final Answer: Canberra
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern SelfVerification
+category OUTPUT_CONTROL
+
+variables {
+    question* : string
+    input_data? : string
+    constraints... : list
+}
+
+template ```
+Step 1: Generate an initial answer.
+
+Step 2: Verify whether the answer satisfies constraints:
+{{^constraints}}
+  - {{.}}
+{{/constraints}}
+
+Step 3: If verification fails, explain issue and correct.
+
+Final Answer = verified answer
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```
+~~~
+
 ### Template
 
 Preserve a provided human-readable prose template or textual layout.
 
-**Component(s):** `OUTPUT_FORMAT`  
+**Component(s):** `DIRECTIVE`, `OUTPUT_FORMAT`
 
 *Placeholder form:*
 
@@ -526,11 +880,41 @@ Next Steps:
 Fill the placeholders for a project status update about migrating a documentation site. Preserve the labels, numbering, and line breaks.
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern Template
+category OUTPUT_CONTROL
+
+variables {
+    template* : string
+    placeholders... : list
+    question* : string
+    input_data? : string
+}
+
+template ```
+Use template: {{template}}
+
+Insert content into placeholders:
+{{^placeholders}}
+  - {{.}}
+{{/placeholders}}
+
+Preserve formatting of template.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```
+~~~
+
 ### VisualizationGenerator
 
 Generate visual or tabular representations for tools such as charting libraries.
 
-**Component(s):** `OUTPUT_FORMAT` 
+**Component(s):** `OUTPUT_FORMAT`
 
 *Placeholder form:*
 
@@ -553,6 +937,35 @@ Structure data for tool: matplotlib
 Output must be formatted for visualization.
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern VisualizationGenerator
+category OUTPUT_CONTROL
+
+variables {
+    visualization_type* : string
+    tool? : string
+    question* : string
+    input_data? : string
+}
+
+template ```
+Generate visualization: {{visualization_type}}
+{{#tool}}
+
+Structure data for tool: {{tool}}
+{{/tool}}
+
+Output must be formatted for visualization.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```
+~~~
+
 
 ## Context Control
 
@@ -560,7 +973,7 @@ Output must be formatted for visualization.
 
 Explicitly control what context the model uses to avoid drift.
 
-**Component(s):** `CONTEXT`, `DIRECTIVE`, `WORKFLOW`  
+**Component(s):** `CONTEXT`, `DIRECTIVE`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -583,6 +996,95 @@ Please ignore Z
 (Optional) start over
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern ContextManager
+category CONTEXT_CONTROL
+
+variables {
+    scope* : string
+    include_items... : list
+    exclude_items... : list
+    reset_signal? : string = "reset"
+    question* : string
+    input_data? : string
+}
+
+template ```
+Set scope: {{scope}}
+{{#include_items}}
+Include only:
+{{^include_items}}
+  - {{.}}
+{{/include_items}}
+{{/include_items}}
+{{#exclude_items}}
+Exclude always:
+{{^exclude_items}}
+  - {{.}}
+{{/exclude_items}}
+{{/exclude_items}}
+{{#reset_signal}}
+If signal = "{{reset_signal}}", discard accumulated context and restart within {{scope}}.
+{{/reset_signal}}
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```
+~~~
+
+### Persona
+
+Adopt a role/persona to shape style and voice.
+
+**Component(s):** `CONTEXT`, `OUTPUT_FORMAT`, `PROFILE_ROLE`
+
+*Placeholder form:*
+
+```
+Act as {PERSONA}
+Provide outputs that {PERSONA} would create
+
+{QUESTION}
+{INPUT_DATA}
+```
+
+*Example:*
+
+```
+Act as a helpful math tutor.
+Provide outputs that a helpful math tutor would create
+
+Explain how to solve the following equation step by step:
+2x + 5 = 15
+```
+
+*Formalization:*
+
+~~~promptspec
+pattern Persona
+category CONTEXT_CONTROL
+
+variables {
+    persona* : string
+    question* : string
+    input_data? : string
+}
+
+template ```
+Act as {{persona}}
+Provide outputs that {{persona}} would create
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```
+~~~
+
 
 ## Meta-Directives
 
@@ -590,7 +1092,7 @@ Please ignore Z
 
 Suggest multiple different ways to solve the same problem.
 
-**Component(s):** `WORKFLOW`  
+**Component(s):** `DIRECTIVE`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -616,11 +1118,39 @@ approach
 to use
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern AlternativeApproaches
+category META_DIRECTIVES
+
+variables {
+    task* : string
+    approach_count? : int = 3
+    compare? : bool = true
+    question? : string
+}
+
+template ```
+Given input task: {{task}}
+
+List {{approach_count}} alternative approaches.
+{{#compare}}
+
+Compare pros and cons of each.
+{{/compare}}
+{{#question}}
+
+{{question}}
+{{/question}}
+```
+~~~
+
 ### CognitiveVerifier
 
 Add explicit verification of reasoning correctness via sub-questions.
 
-**Component(s):** `WORKFLOW`  
+**Component(s):** `DIRECTIVE`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
@@ -643,11 +1173,32 @@ Combine the answers to the individual questions to
 produce the final answer to the overall question
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern CognitiveVerifier
+category META_DIRECTIVES
+
+variables {
+    question* : string
+    subquestion_count? : int = 3
+}
+
+template ```
+Given input question: {{question}}
+
+Generate {{subquestion_count}} subquestions.
+
+Answer each subquestion.
+Combine subanswers into final answer.
+```
+~~~
+
 ### FlippedInteraction
 
 Model asks the user questions instead of directly answering.
 
-**Component(s):** `DIRECTIVE`, `WORKFLOW`  
+**Component(s):** `DIRECTIVE`
 
 *Placeholder form:*
 
@@ -670,11 +1221,35 @@ to achieve this goal (alternatively, forever)
 a time, etc.
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern FlippedInteraction
+category META_DIRECTIVES
+
+variables {
+    question* : string
+    goal_condition? : string
+    question_count? : int = 1
+}
+
+template ```
+Instead of answering directly:
+Generate {{question_count}} subquestions to ask the user.
+{{#goal_condition}}
+
+Stop when {{goal_condition}} is satisfied.
+{{/goal_condition}}
+
+{{question}}
+```
+~~~
+
 ### GamePlay
 
 Frame the task as a game to increase engagement.
 
-**Component(s):** `DIRECTIVE`, `CONSTRAINTS`  
+**Component(s):** `DIRECTIVE`
 
 *Placeholder form:*
 
@@ -697,11 +1272,37 @@ The rules should constrain how the user can respond.
 The interaction must proceed according to the defined rules.
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern GamePlay
+category META_DIRECTIVES
+
+variables {
+    game_name* : string
+    rules+ : list
+    question* : string
+}
+
+template ```
+Frame task as a game: {{game_name}}
+
+Define rules:
+{{^rules}}
+  - {{.}}
+{{/rules}}
+
+Interaction must proceed according to rules.
+
+{{question}}
+```
+~~~
+
 ### InfiniteGeneration
 
 Model generates continuously, with prompts to keep going.
 
-**Component(s):** `DIRECTIVE`, `WORKFLOW`  
+**Component(s):** `DIRECTIVE`
 
 *Placeholder form:*
 
@@ -727,32 +1328,87 @@ preserve the formatting and overall template that I
 provide: https://myapi.com/NAME/profile/JOB
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern InfiniteGeneration
+category META_DIRECTIVES
+
+variables {
+    output_type* : string
+    batch_size? : int = 1
+    stop_condition? : string
+    question* : string
+}
+
+template ```
+Continuously generate {{output_type}}
+
+Batch size = {{batch_size}} outputs per turn
+{{#stop_condition}}
+
+Stop when {{stop_condition}}
+{{/stop_condition}}
+
+{{question}}
+```
+~~~
+
 ### InstructionSelection
 
-Choose the best instruction from a set of candidates.
+Given several candidate instructions for a task, the model selects the most appropriate one and then carries out the task using it.
 
-**Component(s):** `DIRECTIVE`  
+**Component(s):** `DIRECTIVE`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
 ```
-Given candidate instructions: {INST_1}, {INST_2}, … {INST_N}
-Select best instruction for task: {BEST_INST}
+Candidate instructions: {INST_1}, {INST_2}, … {INST_N}
+Select the instruction best suited to {TASK}, state your choice, then carry out the task using it.
 
-{QUESTION}
+{INPUT_DATA}
 ```
 
 *Example:*
 
 ```
-Candidate prompts: A, B, C → Pick best for task.
+Here are three candidate instructions for summarizing a contract:
+A) "Summarize the contract in plain English."
+B) "List each obligation and its responsible party."
+C) "Extract key dates, amounts, and termination clauses."
+Choose the one best suited to a compliance review, state your choice, then apply it to the contract below.
+
+Contract: {CONTRACT}
 ```
+
+*Formalization:*
+
+~~~promptspec
+pattern InstructionSelection
+category META_DIRECTIVES
+
+variables {
+    instructions+ : list
+    task* : string
+    input_data* : string
+}
+
+template ```
+Candidate instructions:
+{{^instructions}}
+  - {{.}}
+{{/instructions}}
+Select the instruction best suited to {{task}}, state your choice, then carry out the task using it.
+
+{{input_data}}
+```
+~~~
 
 ### QuestionRefinement
 
 Improve or reformulate the user's query for clarity.
 
-**Component(s):** `DIRECTIVE`  
+**Component(s):** `DIRECTIVE`
 
 *Placeholder form:*
 
@@ -777,56 +1433,116 @@ version instead
 How to use Windows?
 ```
 
+*Formalization:*
+
+~~~promptspec
+pattern QuestionRefinement
+category META_DIRECTIVES
+
+variables {
+    raw_question* : string
+    ask_confirmation? : bool = true
+}
+
+template ```
+Take input query: {{raw_question}}
+
+Suggest a refined version.
+{{#ask_confirmation}}
+
+Ask user to confirm refinement.
+{{/ask_confirmation}}
+```
+~~~
+
 ### RAR
 
-Retrieve info, answer, then refine with self-edit.
+In one prompt, the model first rephrases and expands the question, then answers the rephrased version.
 
-**Component(s):** `WORKFLOW`  
+**Component(s):** `DIRECTIVE`, `PROCEDURAL_STEPS`
 
 *Placeholder form:*
 
 ```
-Step 1: Retrieve relevant context: {CONTEXT}
-Step 2: Generate answer from {CONTEXT}
-Step 3: Refine answer for clarity/completeness
+Rephrase and expand the following question, then answer your rephrased version.
 
-{QUESTION}
+Question: {QUESTION}
 ```
 
 *Example:*
 
 ```
-“Step 1: Retrieve passage. Step 2: Answer. Step 3: Refine answer.”
+Rephrase and expand the question below, then answer the expanded version.
+
+Question: Was Ada Lovelace born before the telephone was invented?
 ```
+
+*Formalization:*
+
+~~~promptspec
+pattern RAR
+category META_DIRECTIVES
+
+variables {
+    question* : string
+}
+
+template ```
+Rephrase and expand the following question, then answer your rephrased version.
+
+Question: {{question}}
+```
+~~~
 
 ### RE2
 
-Force output into reasoning, evidence, explanation structure.
+Re-reading: instruct the model to read the question again before answering, to improve reasoning.
 
-**Component(s):** `OUTPUT_FORMAT`  
+**Component(s):** `DIRECTIVE`
 
 *Placeholder form:*
 
 ```
-Format output with sections:
-Reason: {REASON}
-Evidence: {EVIDENCE}
-Explanation: {EXPLANATION}
+Read the question again: {QUESTION}
+{INPUT_DATA}
 
-{QUESTION}
+Now answer the question.
 ```
 
 *Example:*
 
 ```
-“Reason: … Evidence: … Explanation: …”
+Read the question again before answering.
+
+Question: Which city hosted the 2016 Summer Olympics?
+Now answer the question.
 ```
+
+*Formalization:*
+
+~~~promptspec
+pattern RE2
+category META_DIRECTIVES
+
+variables {
+    question* : string
+    input_data? : string
+}
+
+template ```
+Read the question again: {{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+Now answer the question.
+```
+~~~
 
 ### RefusalBreaker
 
 Reframe a request when the model refuses; mainly an on-refusal fallback pattern.
 
-**Component(s):** `DIRECTIVE`  
+**Component(s):** `CONSTRAINTS`, `DIRECTIVE`
 
 *Placeholder form:*
 
@@ -848,7 +1564,27 @@ Provide one or more alternative wordings of the ques-
 tion that you could answer
 ```
 
+*Formalization:*
 
----
+~~~promptspec
+pattern RefusalBreaker
+category META_DIRECTIVES
 
-*Generated from `catalog/patterns.json`. Regenerate after editing the JSON so the two stay in sync.*
+variables {
+    question* : string
+    alt_query? : string
+}
+
+trigger ON_REFUSAL
+
+template ```
+If refusal occurs:
+Step 1: State refusal reason.
+Step 2: Reframe request into an alternative query.
+{{#alt_query}}
+Alternative query: {{alt_query}}
+{{/alt_query}}
+
+{{question}}
+```
+~~~

@@ -1,0 +1,25 @@
+pattern FactCheckList
+category OUTPUT_CONTROL
+
+variables {
+    question* : string
+    input_data? : string
+    facts... : list
+    output_location? : string = "end of answer"
+}
+
+template ```
+Extract facts from output:
+{{^facts}}
+  - {{.}}
+{{/facts}}
+
+Insert fact list at {{output_location}}.
+
+Ensure facts are fundamental to correctness.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```

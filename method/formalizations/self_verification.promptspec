@@ -1,0 +1,26 @@
+pattern SelfVerification
+category OUTPUT_CONTROL
+
+variables {
+    question* : string
+    input_data? : string
+    constraints... : list
+}
+
+template ```
+Step 1: Generate an initial answer.
+
+Step 2: Verify whether the answer satisfies constraints:
+{{^constraints}}
+  - {{.}}
+{{/constraints}}
+
+Step 3: If verification fails, explain issue and correct.
+
+Final Answer = verified answer
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```

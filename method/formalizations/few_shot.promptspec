@@ -1,0 +1,21 @@
+pattern FewShot
+category IN_CONTEXT_LEARNING
+
+variables {
+    task* : string              "Description of the task"
+    examples+ : list            "List of example objects"
+    num_examples? : int = 3     "How many examples to show"
+    selection? : enum = "first" | ["first", "random", "all"]
+}
+
+template ```
+Task: {{task}}
+
+Here are some examples:
+{{^examples num_examples}}
+Input: {{input}}
+Output: {{output}}
+{{/examples}}
+
+Now do the same for:
+```

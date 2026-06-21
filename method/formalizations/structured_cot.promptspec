@@ -1,0 +1,34 @@
+pattern StructuredCoT
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+    steps... : list
+    condition? : string
+    action? : string
+    item? : string
+    set_name? : string
+}
+
+template ```
+Use structured reasoning constructs:
+{{#steps}}
+- Sequencing:
+{{^steps}}
+  - {{.}}
+{{/steps}}
+{{/steps}}
+{{#condition}}
+- Branching: IF {{condition}} THEN {{action}}
+{{/condition}}
+{{#item}}
+- Looping: FOR {{item}} IN {{set_name}} DO {{action}}
+{{/item}}
+End with final answer.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```

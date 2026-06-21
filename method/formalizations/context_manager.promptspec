@@ -1,0 +1,35 @@
+pattern ContextManager
+category CONTEXT_CONTROL
+
+variables {
+    scope* : string
+    include_items... : list
+    exclude_items... : list
+    reset_signal? : string = "reset"
+    question* : string
+    input_data? : string
+}
+
+template ```
+Set scope: {{scope}}
+{{#include_items}}
+Include only:
+{{^include_items}}
+  - {{.}}
+{{/include_items}}
+{{/include_items}}
+{{#exclude_items}}
+Exclude always:
+{{^exclude_items}}
+  - {{.}}
+{{/exclude_items}}
+{{/exclude_items}}
+{{#reset_signal}}
+If signal = "{{reset_signal}}", discard accumulated context and restart within {{scope}}.
+{{/reset_signal}}
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```

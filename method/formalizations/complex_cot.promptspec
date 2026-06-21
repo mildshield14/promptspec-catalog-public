@@ -1,0 +1,18 @@
+pattern ComplexCoT
+category REASONING
+
+variables {
+    question* : string
+    input_data? : string
+    path_count? : int = 3
+}
+
+template ```
+Generate {{path_count}} reasoning paths, each as detailed as possible.
+Among the most complex and detailed paths, take the majority answer as the final answer.
+
+{{question}}
+{{#input_data}}
+{{input_data}}
+{{/input_data}}
+```

@@ -1,0 +1,21 @@
+pattern SchemaSpecs
+category OUTPUT_CONTROL
+
+variables {
+    schema* : string
+    fields... : list
+    question* : string
+}
+
+template ```
+Force output into schema: {{schema}}
+{{#fields}}
+
+Populate schema fields:
+{{^fields}}
+  - {{.}}
+{{/fields}}
+{{/fields}}
+
+{{question}}
+```
