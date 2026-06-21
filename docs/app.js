@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var CATALOG_PATHS = ["../catalog/patterns.json", "catalog/patterns.json"];
+  var CATALOG_PATHS = ["catalog/patterns.json", "../catalog/patterns.json"];
 
   var CATEGORY_ORDER = [
     "IN_CONTEXT_LEARNING",

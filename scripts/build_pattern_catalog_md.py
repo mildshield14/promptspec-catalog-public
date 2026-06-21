@@ -12,6 +12,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 JSON_PATH = ROOT / "catalog" / "patterns.json"
 MD_PATH = ROOT / "PATTERN_CATALOG.md"
+DOCS_MD_PATH = ROOT / "docs" / "PATTERN_CATALOG.md"
 
 CATEGORY_ORDER = [
     "IN_CONTEXT_LEARNING",
@@ -126,8 +127,14 @@ def main() -> None:
             if pattern.get("notes"):
                 lines.extend([f"> {pattern['notes']}", ""])
 
-    MD_PATH.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
-    print(f"Built {MD_PATH.relative_to(ROOT)} from {JSON_PATH.relative_to(ROOT)}")
+    payload = "\n".join(lines).rstrip() + "\n"
+    MD_PATH.write_text(payload, encoding="utf-8")
+    DOCS_MD_PATH.write_text(payload, encoding="utf-8")
+    print(
+        "Built "
+        f"{MD_PATH.relative_to(ROOT)} and {DOCS_MD_PATH.relative_to(ROOT)} "
+        f"from {JSON_PATH.relative_to(ROOT)}"
+    )
 
 
 if __name__ == "__main__":

@@ -31,6 +31,12 @@ class TestPatterns:
     def test_patterns_file_exists(self):
         assert (CATALOG_DIR / "patterns.json").exists()
 
+    def test_docs_catalog_copy_matches(self):
+        assert (ROOT / "docs" / "catalog" / "patterns.json").exists()
+        assert (ROOT / "docs" / "catalog" / "patterns.json").read_text(
+            encoding="utf-8"
+        ) == (CATALOG_DIR / "patterns.json").read_text(encoding="utf-8")
+
     def test_pattern_count_is_29(self, patterns_data):
         assert len(patterns_data["patterns"]) == 29
 
@@ -101,6 +107,12 @@ class TestPatternCatalogMarkdown:
 
     def test_markdown_exists(self):
         assert (ROOT / "PATTERN_CATALOG.md").exists()
+
+    def test_docs_markdown_copy_matches(self):
+        assert (ROOT / "docs" / "PATTERN_CATALOG.md").exists()
+        assert (ROOT / "docs" / "PATTERN_CATALOG.md").read_text(
+            encoding="utf-8"
+        ) == (ROOT / "PATTERN_CATALOG.md").read_text(encoding="utf-8")
 
     def test_every_pattern_name_appears(self, patterns_data):
         md = (ROOT / "PATTERN_CATALOG.md").read_text(encoding="utf-8")
