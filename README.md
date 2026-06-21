@@ -48,6 +48,8 @@ promptspec-catalog/
     index.html                    # GitHub Pages catalog browser
     styles.css                    # Website styles
     app.js                        # Website catalog loader and filters
+    catalog/patterns.json         # Generated deploy copy for the static site
+    PATTERN_CATALOG.md            # Generated deploy copy for the static site
     terminology.md                # Vocabulary and term definitions
     methodology_summary.md        # Research methodology overview
     formalization_grammar.md      # PromptSpec formalization grammar reference
@@ -85,6 +87,10 @@ All patterns are derived from published prompt-engineering literature. For the f
 python3 scripts/build_catalog.py
 python3 scripts/build_pattern_catalog_md.py
 ```
+
+The build writes canonical artifacts at `catalog/patterns.json` and
+`PATTERN_CATALOG.md`, plus deploy copies under `docs/` so the static site can
+load them when GitHub Pages serves `docs/` as the web root.
 
 ## Validation
 

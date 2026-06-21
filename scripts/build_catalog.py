@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CSV_PATH = ROOT / "method" / "prompt_taxonomy_final_29_patterns.csv"
 RAW_DATASET_PATH = ROOT / "method" / "master_raw_dataset.csv"
 JSON_PATH = ROOT / "catalog" / "patterns.json"
+DOCS_JSON_PATH = ROOT / "docs" / "catalog" / "patterns.json"
 FORMALIZATION_DIR = ROOT / "method" / "formalizations"
 
 TODO_PATTERNS = set()
@@ -262,8 +263,15 @@ def main() -> None:
         else:
             output[key] = value
 
-    JSON_PATH.write_text(json.dumps(output, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Built {JSON_PATH.relative_to(ROOT)} from {CSV_PATH.relative_to(ROOT)}")
+    payload = json.dumps(output, indent=2, ensure_ascii=False) + "\n"
+    JSON_PATH.write_text(payload, encoding="utf-8")
+    DOCS_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
+    DOCS_JSON_PATH.write_text(payload, encoding="utf-8")
+    print(
+        "Built "
+        f"{JSON_PATH.relative_to(ROOT)} and {DOCS_JSON_PATH.relative_to(ROOT)} "
+        f"from {CSV_PATH.relative_to(ROOT)}"
+    )
 
 
 if __name__ == "__main__":
